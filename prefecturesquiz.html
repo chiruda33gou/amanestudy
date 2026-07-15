@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都道府県番付 — 面積・人口クイズ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F1EADC;
+    --paper-deep: #E8DFCC;
+    --ink: #2C3A3A;
+    --ink-soft: #5B6B67;
+    --moss: #5F7A5B;
+    --moss-deep: #435941;
+    --clay: #B2673D;
+    --gold: #B8933A;
+    --teal: #3E6E71;
+    --wrong: #A6483A;
+    --line: rgba(44,58,58,0.16);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0; padding:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(95,122,91,0.08), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(178,103,61,0.08), transparent 45%);
+    display:flex;
+    justify-content:center;
+    padding: 32px 16px 64px;
+  }
+
+  /* 等高線の背景装飾 */
+  .contours{
+    position:fixed; inset:0;
+    z-index:0;
+    opacity:0.35;
+    pointer-events:none;
+  }
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width: 520px;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.28em;
+    color: var(--moss-deep);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  h1{
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    font-size: 30px;
+    margin:0 0 6px;
+    letter-spacing:0.04em;
+    color: var(--ink);
+  }
+
+  .sub{
+    font-size:13px;
+    color: var(--ink-soft);
+  }
+
+  /* 測量点マーカー（進捗） */
+  .progress{
+    display:flex;
+    justify-content:center;
+    gap: 10px;
+    margin: 22px 0 26px;
+  }
+
+  .marker{
+    width: 34px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:13px;
+    color: var(--ink-soft);
+  }
+
+  .marker svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .marker .num{ position:relative; z-index:1; }
+
+  .marker.done{ color: var(--paper); }
+  .marker.current{ color: var(--clay); }
+
+  .card{
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    padding: 30px 26px 26px;
+    position:relative;
+    box-shadow: 6px 6px 0 rgba(44,58,58,0.08);
+  }
+
+  .card.celebrate{
+    animation: cardGlow 0.9s ease;
+  }
+
+  @keyframes cardGlow{
+    0%{ box-shadow: 6px 6px 0 rgba(44,58,58,0.08); }
+    25%{ box-shadow: 6px 6px 0 rgba(44,58,58,0.08), 0 0 0 8px rgba(184,147,58,0.4), 0 0 46px 14px rgba(184,147,58,0.35); }
+    60%{ box-shadow: 6px 6px 0 rgba(44,58,58,0.08), 0 0 0 3px rgba(184,147,58,0.2), 0 0 20px 4px rgba(184,147,58,0.15); }
+    100%{ box-shadow: 6px 6px 0 rgba(44,58,58,0.08); }
+  }
+
+  /* 画面全体のフラッシュ */
+  .screen-flash{
+    position:fixed;
+    inset:0;
+    z-index: 9999;
+    pointer-events:none;
+    background: radial-gradient(circle at 50% 38%, rgba(184,147,58,0.4), rgba(184,147,58,0) 62%);
+    opacity:0;
+    animation: flashPulse 0.6s ease forwards;
+  }
+
+  @keyframes flashPulse{
+    0%{ opacity:0; }
+    18%{ opacity:1; }
+    100%{ opacity:0; }
+  }
+
+  .card::before{
+    content:"";
+    position:absolute;
+    top:8px; left:8px; right:-8px; bottom:-8px;
+    border:1.5px solid var(--line);
+    border-radius:4px;
+    z-index:-1;
+  }
+
+  .rank-tag{
+    display:inline-flex;
+    align-items:baseline;
+    gap:4px;
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    color: var(--clay);
+    margin-bottom: 4px;
+  }
+
+  .rank-tag .num{ font-size:34px; line-height:1; }
+  .rank-tag .unit{ font-size:15px; }
+
+  .question{
+    font-size:16px;
+    line-height:1.7;
+    color: var(--ink);
+    margin: 6px 0 22px;
+  }
+
+  .question strong{
+    border-bottom: 3px solid var(--gold);
+  }
+
+  .choices{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+  }
+
+  .choice{
+    text-align:left;
+    font-family:'Noto Sans JP', sans-serif;
+    font-size:15px;
+    font-weight:500;
+    padding: 13px 16px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    cursor:pointer;
+    color: var(--ink);
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    position:relative;
+  }
+
+  .choice:hover:not(:disabled){
+    transform: translate(-2px,-2px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .choice:disabled{ cursor:default; }
+
+  .choice.correct{
+    background: var(--moss);
+    border-color: var(--moss-deep);
+    color: #fff;
+    position:relative;
+    overflow: visible;
+    z-index: 2;
+  }
+
+  .choice.correct.pop{
+    animation: correctPop 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes correctPop{
+    0%{ transform: scale(1); box-shadow: none; }
+    35%{ transform: scale(1.08) rotate(-1deg); box-shadow: 0 0 0 8px rgba(184,147,58,0.35); }
+    65%{ transform: scale(0.97) rotate(0.5deg); box-shadow: 0 0 0 3px rgba(184,147,58,0.18); }
+    100%{ transform: scale(1); box-shadow: 0 0 0 0 rgba(184,147,58,0); }
+  }
+
+  .choice.wrong{
+    background: var(--wrong);
+    border-color: #7d322a;
+    color: #fff;
+  }
+
+  .choice.wrong.shake{
+    animation: wrongShake 0.4s ease;
+  }
+
+  @keyframes wrongShake{
+    0%, 100%{ transform: translateX(0); }
+    20%{ transform: translateX(-5px); }
+    40%{ transform: translateX(4px); }
+    60%{ transform: translateX(-3px); }
+    80%{ transform: translateX(2px); }
+  }
+
+  .choice .mark{
+    float:right;
+    font-weight:700;
+  }
+
+  .choice .mark.mark-correct{
+    display:inline-block;
+    animation: markPop 0.5s 0.15s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  @keyframes markPop{
+    0%{ transform: scale(0) rotate(-30deg); opacity:0; }
+    70%{ transform: scale(1.3) rotate(6deg); opacity:1; }
+    100%{ transform: scale(1) rotate(0deg); opacity:1; }
+  }
+
+  /* 紙吹雪 */
+  .confetti-burst{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    overflow:visible;
+    z-index: 5;
+  }
+
+  .confetti-piece{
+    position:absolute;
+    top:50%; left:50%;
+    width: var(--size, 7px);
+    height: var(--size, 7px);
+    background: var(--piece-color, var(--gold));
+    border-radius: var(--shape, 2px);
+    opacity:0;
+    animation: confettiFly var(--dur, 0.8s) var(--delay, 0s) ease-out forwards;
+  }
+
+  @keyframes confettiFly{
+    0%{
+      opacity:1;
+      transform: translate(-50%,-50%) rotate(0deg) scale(1);
+    }
+    100%{
+      opacity:0;
+      transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--rot)) scale(0.6);
+    }
+  }
+
+  .confetti-piece.rain{
+    top: 0;
+    left: var(--x, 50%);
+    transform: translate(-50%, -20px);
+    animation: confettiRain var(--dur, 1.1s) var(--delay, 0s) ease-in forwards;
+  }
+
+  @keyframes confettiRain{
+    0%{ opacity:0; transform: translate(-50%, -20px) rotate(0deg); }
+    10%{ opacity:1; }
+    100%{ opacity:0; transform: translate(calc(-50% + var(--driftx, 0px)), var(--fally, 340px)) rotate(var(--rot, 360deg)); }
+  }
+
+  /* 正解の落款スタンプ */
+  .hanko{
+    position:absolute;
+    top: -22px;
+    right: -8px;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    border: 4px solid #A6342A;
+    color: #A6342A;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    font-size: 26px;
+    letter-spacing: 0.1em;
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 3px rgba(166,52,42,0.15);
+    transform: rotate(-10deg) scale(0);
+    opacity:0;
+    z-index: 6;
+    animation: stampIn 0.6s 0.05s cubic-bezier(.2,1.7,.4,1) forwards;
+    pointer-events:none;
+  }
+
+  @keyframes stampIn{
+    0%{ transform: rotate(-34deg) scale(3); opacity:0; }
+    45%{ transform: rotate(-6deg) scale(0.88); opacity:1; }
+    65%{ transform: rotate(-12deg) scale(1.08); }
+    100%{ transform: rotate(-10deg) scale(1); opacity:1; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .choice.correct.pop, .choice.wrong.shake, .confetti-piece, .hanko, .mark-correct, .card.celebrate, .screen-flash, .auto-advance-bar.running{
+      animation: none !important;
+    }
+  }
+
+  .feedback{
+    min-height: 22px;
+    margin-top: 16px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height:1.6;
+  }
+
+  .feedback.correct-text{ color: var(--moss-deep); font-weight:700; }
+  .feedback.wrong-text{ color: var(--wrong); font-weight:700; }
+
+  .auto-advance{
+    margin-top: 18px;
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .auto-advance-bar{
+    height: 100%;
+    width: 100%;
+    background: var(--clay);
+    border-radius: 2px;
+    transform-origin: left center;
+    transform: scaleX(1);
+  }
+
+  .auto-advance-bar.running{
+    animation-name: shrinkBar;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes shrinkBar{
+    from{ transform: scaleX(1); }
+    to{ transform: scaleX(0); }
+  }
+
+  /* 結果画面 */
+  .result{
+    text-align:center;
+  }
+
+  .result .eyebrow{ margin-bottom:10px; }
+
+  .score{
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    font-size: 56px;
+    color: var(--clay);
+    margin: 6px 0 2px;
+  }
+
+  .score span{ font-size:22px; color: var(--ink-soft); font-weight:500; }
+
+  .result-msg{
+    font-size:14px;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+    line-height:1.7;
+  }
+
+  .rank-list{
+    text-align:left;
+    list-style:none;
+    padding:0; margin: 0 0 24px;
+    border-top:1px solid var(--line);
+  }
+
+  .rank-list li{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding: 10px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+
+  .rank-list .r{
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    color: var(--clay);
+    width:22px;
+  }
+
+  .rank-list .pref{ flex:1; font-weight:700; }
+  .rank-list .icon{ font-size:16px; }
+
+  .retry-btn{
+    width:100%;
+    padding: 13px;
+    background: var(--clay);
+    color: #fff;
+    border:none;
+    border-radius:3px;
+    font-family:'Noto Sans JP', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.05em;
+    cursor:pointer;
+  }
+  .retry-btn:hover{ background: #96522f; }
+
+  /* モード選択画面 */
+  .mode-select{
+    display:flex;
+    flex-direction:column;
+    gap: 14px;
+  }
+
+  .mode-select .lead{
+    font-size:14px;
+    color: var(--ink-soft);
+    line-height:1.7;
+    margin-bottom: 4px;
+  }
+
+  .mode-btn{
+    display:flex;
+    align-items:center;
+    gap: 16px;
+    text-align:left;
+    padding: 18px 18px;
+    background:#fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    cursor:pointer;
+    transition: transform 0.12s ease;
+    font-family:'Noto Sans JP', sans-serif;
+  }
+
+  .mode-btn:hover{
+    transform: translate(-2px,-2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .mode-btn .badge{
+    flex-shrink:0;
+    width: 52px; height:52px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:-0.02em;
+    color:#fff;
+  }
+
+  .mode-btn.wide .badge{ background: var(--moss); }
+  .mode-btn.narrow .badge{ background: var(--clay); }
+  .mode-btn.popMany .badge{ background: var(--gold); }
+  .mode-btn.popFew .badge{ background: var(--teal); }
+
+  .mode-group-label{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin: 4px 0 -2px;
+    font-size:11.5px;
+    letter-spacing:0.18em;
+    color: var(--ink-soft);
+    font-weight:700;
+  }
+
+  .mode-group-label::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+
+  .mode-btn .txt strong{
+    display:block;
+    font-size:16px;
+    font-weight:700;
+    color: var(--ink);
+    margin-bottom:3px;
+  }
+
+  .mode-btn .txt span{
+    font-size:12.5px;
+    color: var(--ink-soft);
+  }
+
+  .switch-btn{
+    width:100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: #fff;
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius:3px;
+    font-family:'Noto Sans JP', sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    letter-spacing:0.03em;
+    cursor:pointer;
+  }
+  .switch-btn:hover{ background: var(--paper-deep); }
+
+  /* 解答済みの順位ボード */
+  .answered-board{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin: 0 0 22px;
+  }
+
+  .answered-tile{
+    border: 1.3px solid var(--ink);
+    border-radius: 3px;
+    background: #fff;
+    padding: 7px 3px;
+    text-align:center;
+    min-height: 52px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+
+  .answered-tile .r{
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    font-size:10.5px;
+    color: var(--ink-soft);
+    letter-spacing:0.02em;
+  }
+
+  .answered-tile .p{
+    font-size:11px;
+    font-weight:700;
+    line-height:1.25;
+    color: var(--ink-soft);
+    word-break: keep-all;
+  }
+
+  .answered-tile.pending{
+    border-style:dashed;
+    border-color: var(--line);
+  }
+
+  .answered-tile.pending .r,
+  .answered-tile.pending .p{
+    color: var(--ink-soft);
+    opacity:0.55;
+  }
+
+  .answered-tile.correct{
+    background: var(--moss);
+    border-color: var(--moss-deep);
+  }
+  .answered-tile.correct .r,
+  .answered-tile.correct .p{ color:#fff; }
+
+  .answered-tile.wrong{
+    background: var(--wrong);
+    border-color: #7d322a;
+  }
+  .answered-tile.wrong .r,
+  .answered-tile.wrong .p{ color:#fff; }
+
+  .answered-tile.reveal{
+    animation: tileReveal 0.45s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes tileReveal{
+    0%{ transform: scale(0.8); opacity:0.3; }
+    60%{ transform: scale(1.06); opacity:1; }
+    100%{ transform: scale(1); opacity:1; }
+  }
+
+  footer.note{
+    text-align:center;
+    margin-top: 20px;
+    font-size:11px;
+    color: var(--ink-soft);
+    opacity:0.7;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .choice{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="contours" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+  <g fill="none" stroke="#5F7A5B" stroke-width="1">
+    <ellipse cx="80" cy="120" rx="140" ry="90"/>
+    <ellipse cx="80" cy="120" rx="180" ry="120"/>
+    <ellipse cx="80" cy="120" rx="220" ry="150"/>
+    <ellipse cx="340" cy="620" rx="150" ry="100"/>
+    <ellipse cx="340" cy="620" rx="200" ry="140"/>
+    <ellipse cx="340" cy="620" rx="250" ry="180"/>
+  </g>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">日本地理ドリル</div>
+    <h1>都道府県番付</h1>
+    <div class="sub" id="subtitle">広い県・狭い県、どちらのTOP5から覚える?</div>
+  </header>
+
+  <div class="progress" id="progress"></div>
+
+  <div class="answered-board" id="answeredBoard"></div>
+
+  <div class="card" id="card"></div>
+
+  <footer class="note">出典の目安：国土地理院「全国都道府県市区町村別面積調」</footer>
+</div>
+
+<script>
+const MODES = {
+  wide: {
+    key: "wide",
+    badge: "広",
+    verb: "広い",
+    subjectLabel: "面積が広い",
+    title: "面積が広い都道府県 TOP5",
+    subtitle: "面積が広い都道府県 TOP5 を覚えよう",
+    resultTitle: "広さ編・結果",
+    goodMsg: "満点です。面積番付〈広さ編〉は完全に頭に入りました。",
+    okMsg: "よくできました。もう一度で満点を狙えます。",
+    lowMsg: "まずは全体像から。もう一度挑戦してみましょう。",
+    questions: [
+      { rank: 1, answer: "北海道", choices: ["北海道", "青森県", "岩手県", "秋田県", "新潟県"] },
+      { rank: 2, answer: "岩手県", choices: ["北海道", "岩手県", "福島県", "青森県", "長野県"] },
+      { rank: 3, answer: "福島県", choices: ["岩手県", "福島県", "長野県", "新潟県", "秋田県"] },
+      { rank: 4, answer: "長野県", choices: ["新潟県", "長野県", "福島県", "岐阜県", "山梨県"] },
+      { rank: 5, answer: "新潟県", choices: ["長野県", "新潟県", "福島県", "秋田県", "山形県"] },
+    ],
+  },
+  narrow: {
+    key: "narrow",
+    badge: "狭",
+    verb: "狭い",
+    subjectLabel: "面積が狭い",
+    title: "面積が狭い都道府県 TOP5",
+    subtitle: "面積が狭い都道府県 TOP5 を覚えよう",
+    resultTitle: "コンパクト編・結果",
+    goodMsg: "満点です。コンパクト県の順位も完全に頭に入りました。",
+    okMsg: "よくできました。もう一度で満点を狙えます。",
+    lowMsg: "小さな県ほど紛らわしいもの。もう一度挑戦してみましょう。",
+    questions: [
+      { rank: 1, answer: "香川県", choices: ["香川県", "大阪府", "東京都", "沖縄県", "神奈川県"] },
+      { rank: 2, answer: "大阪府", choices: ["香川県", "大阪府", "東京都", "沖縄県", "神奈川県"] },
+      { rank: 3, answer: "東京都", choices: ["大阪府", "東京都", "沖縄県", "神奈川県", "佐賀県"] },
+      { rank: 4, answer: "沖縄県", choices: ["東京都", "沖縄県", "神奈川県", "佐賀県", "香川県"] },
+      { rank: 5, answer: "神奈川県", choices: ["沖縄県", "神奈川県", "佐賀県", "埼玉県", "東京都"] },
+    ],
+  },
+  popMany: {
+    key: "popMany",
+    badge: "人多",
+    verb: "多い",
+    questionKind: "population",
+    subjectLabel: "人口が多い",
+    title: "人口が多い都道府県 TOP5",
+    subtitle: "人口が多い都道府県 TOP5 を覚えよう",
+    resultTitle: "人口編・結果",
+    goodMsg: "満点です。人口ランキングも完全に頭に入りました。",
+    okMsg: "よくできました。もう一度で満点を狙えます。",
+    lowMsg: "大都市圏の顔ぶれを、もう一度おさらいしましょう。",
+    questions: [
+      { rank: 1, answer: "東京都", choices: ["東京都", "神奈川県", "大阪府", "愛知県", "埼玉県"] },
+      { rank: 2, answer: "神奈川県", choices: ["東京都", "神奈川県", "大阪府", "愛知県", "埼玉県"] },
+      { rank: 3, answer: "大阪府", choices: ["神奈川県", "大阪府", "愛知県", "埼玉県", "千葉県"] },
+      { rank: 4, answer: "愛知県", choices: ["大阪府", "愛知県", "埼玉県", "千葉県", "兵庫県"] },
+      { rank: 5, answer: "埼玉県", choices: ["愛知県", "埼玉県", "千葉県", "兵庫県", "北海道"] },
+    ],
+  },
+  popFew: {
+    key: "popFew",
+    badge: "人少",
+    verb: "少ない",
+    questionKind: "population",
+    subjectLabel: "人口が少ない",
+    title: "人口が少ない都道府県 TOP5",
+    subtitle: "人口が少ない都道府県 TOP5 を覚えよう",
+    resultTitle: "人口編・結果",
+    goodMsg: "満点です。人口が少ない県の顔ぶれも完璧です。",
+    okMsg: "よくできました。もう一度で満点を狙えます。",
+    lowMsg: "山陰・四国の県は紛らわしいもの。もう一度挑戦してみましょう。",
+    questions: [
+      { rank: 1, answer: "鳥取県", choices: ["鳥取県", "島根県", "高知県", "徳島県", "福井県"] },
+      { rank: 2, answer: "島根県", choices: ["鳥取県", "島根県", "高知県", "徳島県", "福井県"] },
+      { rank: 3, answer: "高知県", choices: ["島根県", "高知県", "徳島県", "福井県", "佐賀県"] },
+      { rank: 4, answer: "徳島県", choices: ["高知県", "徳島県", "福井県", "佐賀県", "鳥取県"] },
+      { rank: 5, answer: "福井県", choices: ["徳島県", "福井県", "佐賀県", "山梨県", "島根県"] },
+    ],
+  },
+};
+
+let currentMode = null;
+let order = [];
+let current = 0;
+let score = 0;
+let answered = false;
+let answeredResults = [];
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildOrder(){
+  order = currentMode.questions.map(q => ({...q, shuffled: shuffle(q.choices)}));
+}
+
+function markerSVG(kind){
+  // kind: 'todo' | 'current' | 'done'
+  if(kind === 'done'){
+    return `<svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#5F7A5B" stroke="#435941" stroke-width="1.5"/></svg>`;
+  }
+  if(kind === 'current'){
+    return `<svg viewBox="0 0 34 34"><polygon points="17,4 30,28 4,28" fill="none" stroke="#B2673D" stroke-width="2"/><circle cx="17" cy="21" r="2" fill="#B2673D"/></svg>`;
+  }
+  return `<svg viewBox="0 0 34 34"><polygon points="17,4 30,28 4,28" fill="none" stroke="#5B6B67" stroke-width="1.2" opacity="0.5"/></svg>`;
+}
+
+function renderProgress(){
+  const el = document.getElementById('progress');
+  el.innerHTML = order.map((q,i) => {
+    let kind = 'todo';
+    if(i < current) kind = 'done';
+    else if(i === current) kind = 'current';
+    return `<div class="marker ${kind}">${markerSVG(kind)}<span class="num">${q.rank}</span></div>`;
+  }).join('');
+}
+
+function renderAnsweredBoard(revealIndex){
+  const el = document.getElementById('answeredBoard');
+  if(!el) return;
+  el.innerHTML = order.map((q, i) => {
+    const res = answeredResults[i];
+    if(!res){
+      return `<div class="answered-tile pending"><span class="r">${q.rank}位</span><span class="p">？</span></div>`;
+    }
+    const cls = res.correct ? 'correct' : 'wrong';
+    const revealCls = (i === revealIndex) ? 'reveal' : '';
+    return `<div class="answered-tile ${cls} ${revealCls}"><span class="r">${q.rank}位</span><span class="p">${res.answer}</span></div>`;
+  }).join('');
+}
+
+function renderQuestion(){
+  answered = false;
+  renderProgress();
+  renderAnsweredBoard();
+  const q = order[current];
+  const card = document.getElementById('card');
+  card.innerHTML = `
+    <div class="rank-tag"><span class="num">${q.rank}</span><span class="unit">位</span></div>
+    <div class="question">${currentMode.subjectLabel}都道府県、第<strong>${q.rank}位</strong>はどこでしょう?</div>
+    <div class="choices" id="choices">
+      ${q.shuffled.map(c => `<button class="choice" data-pref="${c}">${c}</button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="auto-advance" id="autoAdvance" style="display:none;">
+      <div class="auto-advance-bar" id="autoBar"></div>
+    </div>
+  `;
+
+  document.querySelectorAll('.choice').forEach(btn => {
+    btn.addEventListener('click', () => selectChoice(btn, q));
+  });
+}
+
+function selectChoice(btn, q){
+  if(answered) return;
+  answered = true;
+  const chosen = btn.dataset.pref;
+  const isCorrect = chosen === q.answer;
+  if(isCorrect) score++;
+
+  let correctBtn = null;
+
+  document.querySelectorAll('.choice').forEach(b => {
+    b.disabled = true;
+    if(b.dataset.pref === q.answer){
+      b.classList.add('correct', 'pop');
+      b.innerHTML += '<span class="mark mark-correct">◯</span>';
+      correctBtn = b;
+    } else if(b === btn){
+      b.classList.add('wrong', 'shake');
+      b.innerHTML += '<span class="mark">×</span>';
+    }
+  });
+
+  if(isCorrect && correctBtn){
+    spawnConfetti(correctBtn);
+    spawnConfettiRain(document.getElementById('card'));
+    spawnStamp(document.getElementById('card'));
+    spawnScreenFlash();
+    const cardEl = document.getElementById('card');
+    cardEl.classList.remove('celebrate');
+    void cardEl.offsetWidth;
+    cardEl.classList.add('celebrate');
+  }
+
+  answeredResults[current] = { answer: q.answer, correct: isCorrect };
+  renderAnsweredBoard(current);
+
+  const fb = document.getElementById('feedback');
+  if(isCorrect){
+    fb.textContent = `正解。第${q.rank}位は${q.answer}です。`;
+    fb.className = 'feedback correct-text';
+  } else {
+    fb.textContent = `不正解。正しくは${q.answer}が第${q.rank}位です。`;
+    fb.className = 'feedback wrong-text';
+  }
+
+  const delay = isCorrect ? 1900 : 1500;
+  const autoAdvance = document.getElementById('autoAdvance');
+  const autoBar = document.getElementById('autoBar');
+  autoAdvance.style.display = 'block';
+  autoBar.style.animationDuration = `${delay}ms`;
+  autoBar.classList.add('running');
+
+  setTimeout(nextQuestion, delay);
+}
+
+function spawnConfetti(targetBtn){
+  const burst = document.createElement('div');
+  burst.className = 'confetti-burst';
+  const colors = ['#B8933A', '#5F7A5B', '#B2673D', '#2C3A3A'];
+  const shapes = ['2px', '50%', '1px'];
+  const count = 28;
+
+  for(let i=0;i<count;i++){
+    const p = document.createElement('span');
+    p.className = 'confetti-piece';
+    const angle = (Math.PI * 2 * i / count) + (Math.random()*0.6 - 0.3);
+    const dist = 70 + Math.random()*100;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - 25;
+    p.style.setProperty('--tx', `${tx}px`);
+    p.style.setProperty('--ty', `${ty}px`);
+    p.style.setProperty('--rot', `${Math.round(Math.random()*720 - 360)}deg`);
+    p.style.setProperty('--size', `${5 + Math.random()*6}px`);
+    p.style.setProperty('--piece-color', colors[i % colors.length]);
+    p.style.setProperty('--shape', shapes[i % shapes.length]);
+    p.style.setProperty('--dur', `${0.75 + Math.random()*0.55}s`);
+    p.style.setProperty('--delay', `${Math.random()*0.08}s`);
+    burst.appendChild(p);
+  }
+
+  targetBtn.appendChild(burst);
+  setTimeout(() => burst.remove(), 1500);
+}
+
+function spawnConfettiRain(card){
+  const rain = document.createElement('div');
+  rain.className = 'confetti-burst';
+  const colors = ['#B8933A', '#5F7A5B', '#B2673D', '#2C3A3A', '#A6342A'];
+  const shapes = ['2px', '50%', '1px'];
+  const count = 34;
+  const cardHeight = card.offsetHeight || 320;
+
+  for(let i=0;i<count;i++){
+    const p = document.createElement('span');
+    p.className = 'confetti-piece rain';
+    p.style.setProperty('--x', `${Math.random()*100}%`);
+    p.style.setProperty('--driftx', `${Math.round(Math.random()*80 - 40)}px`);
+    p.style.setProperty('--fally', `${cardHeight + 60 + Math.random()*60}px`);
+    p.style.setProperty('--rot', `${Math.round(Math.random()*540 + 180)}deg`);
+    p.style.setProperty('--size', `${5 + Math.random()*6}px`);
+    p.style.setProperty('--piece-color', colors[i % colors.length]);
+    p.style.setProperty('--shape', shapes[i % shapes.length]);
+    p.style.setProperty('--dur', `${0.9 + Math.random()*0.7}s`);
+    p.style.setProperty('--delay', `${Math.random()*0.35}s`);
+    rain.appendChild(p);
+  }
+
+  card.appendChild(rain);
+  setTimeout(() => rain.remove(), 2000);
+}
+
+function spawnScreenFlash(){
+  const flash = document.createElement('div');
+  flash.className = 'screen-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 700);
+}
+
+function spawnStamp(card){
+  const old = card.querySelector('.hanko');
+  if(old) old.remove();
+  const stamp = document.createElement('div');
+  stamp.className = 'hanko';
+  stamp.textContent = '正解';
+  card.appendChild(stamp);
+  setTimeout(() => stamp.remove(), 2200);
+}
+
+function nextQuestion(){
+  current++;
+  if(current >= order.length){
+    renderResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function renderResult(){
+  const el = document.getElementById('progress');
+  el.innerHTML = order.map(() => `<div class="marker done">${markerSVG('done')}</div>`).join('');
+  document.getElementById('answeredBoard').innerHTML = '';
+
+  let msg = "";
+  if(score === 5) msg = currentMode.goodMsg;
+  else if(score >= 3) msg = currentMode.okMsg;
+  else msg = currentMode.lowMsg;
+
+  const card = document.getElementById('card');
+  card.innerHTML = `
+    <div class="result">
+      <div class="eyebrow">${currentMode.resultTitle}</div>
+      <div class="score">${score}<span>／5</span></div>
+      <div class="result-msg">${msg}</div>
+      <ul class="rank-list">
+        ${currentMode.questions.map(q => `<li><span class="r">${q.rank}</span><span class="pref">${q.answer}</span></li>`).join('')}
+      </ul>
+      <button class="retry-btn" id="retryBtn">もう一度挑戦する</button>
+      <button class="switch-btn" id="switchBtn">別のクイズに挑戦する</button>
+    </div>
+  `;
+  document.getElementById('retryBtn').addEventListener('click', () => startQuiz(currentMode.key));
+  document.getElementById('switchBtn').addEventListener('click', renderModeSelect);
+}
+
+function startQuiz(modeKey){
+  currentMode = MODES[modeKey];
+  document.getElementById('subtitle').textContent = currentMode.subtitle;
+  current = 0;
+  score = 0;
+  answeredResults = [];
+  buildOrder();
+  renderQuestion();
+}
+
+function renderModeSelect(){
+  document.getElementById('subtitle').textContent = "覚えたいランキングを選んでね";
+  document.getElementById('progress').innerHTML = '';
+  document.getElementById('answeredBoard').innerHTML = '';
+  const card = document.getElementById('card');
+  card.innerHTML = `
+    <div class="mode-select">
+      <div class="lead">挑戦したいクイズを選んでください。</div>
+      <div class="mode-group-label">面積編</div>
+      <button class="mode-btn wide" id="btnWide">
+        <span class="badge">広</span>
+        <span class="txt"><strong>面積が広い都道府県 TOP5</strong><span>北海道から新潟県まで、広さの番付に挑戦</span></span>
+      </button>
+      <button class="mode-btn narrow" id="btnNarrow">
+        <span class="badge">狭</span>
+        <span class="txt"><strong>面積が狭い都道府県 TOP5</strong><span>香川県から神奈川県まで、コンパクト県の番付に挑戦</span></span>
+      </button>
+      <div class="mode-group-label">人口編</div>
+      <button class="mode-btn popMany" id="btnPopMany">
+        <span class="badge">人多</span>
+        <span class="txt"><strong>人口が多い都道府県 TOP5</strong><span>東京都から埼玉県まで、大都市圏の番付に挑戦</span></span>
+      </button>
+      <button class="mode-btn popFew" id="btnPopFew">
+        <span class="badge">人少</span>
+        <span class="txt"><strong>人口が少ない都道府県 TOP5</strong><span>鳥取県から福井県まで、静かな県の番付に挑戦</span></span>
+      </button>
+    </div>
+  `;
+  document.getElementById('btnWide').addEventListener('click', () => startQuiz('wide'));
+  document.getElementById('btnNarrow').addEventListener('click', () => startQuiz('narrow'));
+  document.getElementById('btnPopMany').addEventListener('click', () => startQuiz('popMany'));
+  document.getElementById('btnPopFew').addEventListener('click', () => startQuiz('popFew'));
+}
+
+renderModeSelect();
+</script>
+
+</body>
+</html>
