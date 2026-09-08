@@ -192,6 +192,7 @@
     font-weight: 700;
     color: var(--lavender);
     min-height: 20px;
+    letter-spacing: 0.12em;
   }
 
   .prompt {
@@ -592,9 +593,14 @@
     });
   }
 
+  function maskKana(kana){
+    if (kana.length <= 1) return kana;
+    return kana.slice(0, 1) + '●'.repeat(kana.length - 1);
+  }
+
   hintBtn.addEventListener('click', function(){
     var q = quiz[currentIndex];
-    hintText.textContent = q.kana;
+    hintText.textContent = maskKana(q.kana);
     hintBtn.disabled = true;
   });
 
