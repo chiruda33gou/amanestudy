@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英検5級 なぞり書きドリル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF6EC;
+    --card:#FFFFFF;
+    --ink:#2E4057;
+    --ink-soft:#5B6B84;
+    --line:#AEC9D8;
+    --coral:#F2764F;
+    --coral-dark:#D85F3B;
+    --teal:#3E9C8F;
+    --teal-dark:#2F7A70;
+    --gold:#E8A93C;
+    --guide:#B9C7D6;
+    --shadow: 0 6px 0 rgba(46,64,87,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 8%, rgba(242,118,79,0.10), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(62,156,143,0.12), transparent 42%),
+      var(--paper);
+    font-family:'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:24px 14px 40px;
+  }
+  .app{
+    width:100%;
+    max-width:560px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  header .kicker{
+    font-size:13px;
+    letter-spacing:.04em;
+    color:var(--teal-dark);
+    font-weight:700;
+    margin-bottom:2px;
+  }
+  header h1{
+    font-size:26px;
+    margin:0 0 4px;
+    font-weight:800;
+    color:var(--ink);
+  }
+  header p{
+    margin:0;
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+
+  /* ---- Start screen ---- */
+  .start-card{
+    background:var(--card);
+    border-radius:22px;
+    padding:36px 24px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    border:2px solid rgba(46,64,87,0.06);
+  }
+  .start-card .big-icon{
+    font-size:46px;
+    margin-bottom:6px;
+  }
+  .start-card h2{
+    font-size:19px;
+    margin:0 0 8px;
+  }
+  .start-card p{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0 0 24px;
+  }
+  .btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+    font-weight:700;
+    border-radius:16px;
+    padding:14px 22px;
+    font-size:16px;
+    color:#fff;
+    background:var(--coral);
+    box-shadow:0 5px 0 var(--coral-dark);
+    transition:transform .04s ease;
+  }
+  .btn:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--coral-dark); }
+  .btn.secondary{
+    background:var(--teal);
+    box-shadow:0 5px 0 var(--teal-dark);
+  }
+  .btn.ghost{
+    background:#fff;
+    color:var(--ink);
+    box-shadow:0 3px 0 rgba(46,64,87,0.15);
+    border:2px solid rgba(46,64,87,0.12);
+  }
+  .btn:disabled{
+    opacity:.4;
+    cursor:default;
+    box-shadow:none;
+    transform:none;
+  }
+
+  /* ---- Practice screen ---- */
+  .practice{ display:none; }
+  .practice.active{ display:block; }
+  .start-wrap.hidden{ display:none; }
+  .result-wrap{ display:none; }
+  .result-wrap.active{ display:block; }
+
+  .progress-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .progress-track{
+    flex:1;
+    height:8px;
+    background:rgba(46,64,87,0.1);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--coral);
+    border-radius:6px;
+    transition:width .25s ease;
+  }
+  .progress-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:22px;
+    padding:20px 18px 22px;
+    box-shadow:var(--shadow);
+    border:2px solid rgba(46,64,87,0.06);
+  }
+
+  .word-meaning{
+    text-align:center;
+    font-size:18px;
+    font-weight:700;
+    color:var(--teal-dark);
+    margin-bottom:12px;
+  }
+
+  .stage-wrap{
+    position:relative;
+    width:100%;
+    background:
+      repeating-linear-gradient(
+        rgba(46,64,87,0.05) 0px, rgba(46,64,87,0.05) 1px, transparent 1px, transparent 100%
+      );
+    border-radius:14px;
+    overflow:hidden;
+    border:2px dashed rgba(174,201,216,0.9);
+    touch-action:none;
+  }
+  .stage-wrap canvas{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  #drawCanvas{
+    position:absolute;
+    top:0; left:0;
+    touch-action:none;
+  }
+
+  .correct-badge{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    opacity:0;
+    transform:scale(.7);
+    transition:opacity .22s ease, transform .28s cubic-bezier(.34,1.56,.64,1);
+  }
+  .correct-badge.show{
+    opacity:1;
+    transform:scale(1);
+  }
+  .correct-badge .pill{
+    background:var(--teal);
+    color:#fff;
+    font-weight:800;
+    font-size:20px;
+    padding:13px 24px;
+    border-radius:18px;
+    box-shadow:0 6px 0 var(--teal-dark);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .tool-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-top:14px;
+  }
+  .tool-btn{
+    appearance:none;
+    border:2px solid rgba(46,64,87,0.12);
+    background:#fff;
+    color:var(--ink-soft);
+    font-family:inherit;
+    font-weight:700;
+    font-size:13px;
+    padding:9px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .tool-btn:active{ transform:translateY(1px); }
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:18px;
+  }
+  .nav-row .btn{ flex:1; }
+
+  /* ---- Result screen ---- */
+  .result-card{
+    background:var(--card);
+    border-radius:22px;
+    padding:34px 24px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    border:2px solid rgba(46,64,87,0.06);
+  }
+  .result-card .big-icon{ font-size:50px; margin-bottom:8px; }
+  .result-card h2{ font-size:20px; margin:0 0 6px; }
+  .result-card p{ font-size:14px; color:var(--ink-soft); margin:0 0 24px; }
+  .result-words{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    justify-content:center;
+    margin-bottom:26px;
+  }
+  .chip{
+    background:rgba(62,156,143,0.1);
+    color:var(--teal-dark);
+    font-size:12.5px;
+    font-weight:700;
+    padding:6px 10px;
+    border-radius:10px;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:20px;
+    font-size:11.5px;
+    color:rgba(46,64,87,0.4);
+  }
+
+  @media (max-width:380px){
+    header h1{ font-size:22px; }
+    .word-meaning{ font-size:16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="kicker">EIKEN 5 VOCABULARY</div>
+    <h1>えいけん5級 なぞり書きドリル</h1>
+    <p>ランダムに20語出題されるよ。指でなぞって書いてみよう！</p>
+  </header>
+
+  <div class="start-wrap" id="startWrap">
+    <div class="start-card">
+      <div class="big-icon">✏️</div>
+      <h2>準備はいい？</h2>
+      <p>「スタート」を押すと、単語プールからランダムに20問えらばれます。<br>お手本の点線をなぞって、指でなぞり書きしよう。</p>
+      <button class="btn" id="startBtn">20問スタート</button>
+    </div>
+  </div>
+
+  <div class="practice" id="practiceWrap">
+    <div class="progress-row">
+      <div class="progress-label" id="progressLabel">1 / 20</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:5%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="word-meaning" id="wordMeaning">りんご</div>
+
+      <div class="stage-wrap" id="stageWrap">
+        <canvas id="guideCanvas"></canvas>
+        <canvas id="drawCanvas"></canvas>
+        <div class="correct-badge" id="correctBadge"><div class="pill">✅ 正解！</div></div>
+      </div>
+
+      <div class="tool-row">
+        <button class="tool-btn" id="speakBtn">🔊 読み上げ</button>
+        <button class="tool-btn" id="clearBtn">🧹 やり直し</button>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn ghost" id="prevBtn">← まえ</button>
+      <button class="btn secondary" id="nextBtn">つぎへ →</button>
+    </div>
+  </div>
+
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-card">
+      <div class="big-icon">🎉</div>
+      <h2>よくできました！</h2>
+      <p>20語のなぞり書きが終わったよ。もう一度べつの20語に挑戦してみよう。</p>
+      <div class="result-words" id="resultWords"></div>
+      <button class="btn" id="restartBtn">もう一度スタート</button>
+    </div>
+  </div>
+
+  <footer>英検®は公益財団法人 日本英語検定協会の登録商標です。この教材は非公式の学習用アプリです。</footer>
+</div>
+
+<script>
+// ---------- 英検5級レベルの単語プール (英単語 / 日本語の意味) ----------
+const WORD_BANK = [
+["apple","りんご"],["banana","バナナ"],["orange","オレンジ"],["milk","牛乳"],["water","水"],
+["bread","パン"],["egg","卵"],["rice","ごはん・米"],["cake","ケーキ"],["tea","お茶"],
+["juice","ジュース"],["coffee","コーヒー"],["fish","魚"],["meat","肉"],["cheese","チーズ"],
+["dog","犬"],["cat","ねこ"],["bird","鳥"],["rabbit","うさぎ"],["horse","馬"],
+["cow","牛"],["pig","ぶた"],["lion","ライオン"],["tiger","とら"],["elephant","ぞう"],
+["monkey","さる"],["bear","くま"],["panda","パンダ"],["school","学校"],["teacher","先生"],
+["student","生徒"],["friend","友だち"],["book","本"],["pen","ペン"],["pencil","えんぴつ"],
+["notebook","ノート"],["bag","かばん"],["desk","つくえ"],["chair","いす"],["door","ドア"],
+["window","まど"],["ball","ボール"],["box","箱"],["cup","カップ"],["dish","さら"],
+["spoon","スプーン"],["fork","フォーク"],["knife","ナイフ"],["house","家"],["room","部屋"],
+["bed","ベッド"],["table","テーブル"],["car","車"],["bus","バス"],["train","電車"],
+["bike","自転車"],["ship","船"],["station","駅"],["park","公園"],["zoo","動物園"],
+["library","図書館"],["hospital","病院"],["store","店"],["city","市"],["town","町"],
+["country","国"],["mother","お母さん"],["father","お父さん"],["sister","姉・妹"],["brother","兄・弟"],
+["family","家族"],["baby","赤ちゃん"],["boy","男の子"],["girl","女の子"],["man","男の人"],
+["woman","女の人"],["red","赤い"],["blue","青い"],["yellow","黄色い"],["green","緑の"],
+["white","白い"],["black","黒い"],["pink","ピンク色の"],["purple","むらさき色の"],["big","大きい"],
+["small","小さい"],["long","長い"],["short","短い"],["new","新しい"],["old","古い"],
+["good","よい"],["happy","幸せな"],["sad","悲しい"],["hot","暑い"],["cold","寒い"],
+["sunny","晴れた"],["rainy","雨の"],["cloudy","くもりの"],["snowy","雪の"],["spring","春"],
+["summer","夏"],["fall","秋"],["winter","冬"],["Monday","月曜日"],["Tuesday","火曜日"],
+["Wednesday","水曜日"],["Thursday","木曜日"],["Friday","金曜日"],["Saturday","土曜日"],["Sunday","日曜日"],
+["morning","朝"],["afternoon","午後"],["evening","夕方"],["night","夜"],["today","今日"],
+["tomorrow","明日"],["yesterday","昨日"],["run","走る"],["walk","歩く"],["jump","ジャンプする"],
+["swim","泳ぐ"],["eat","食べる"],["drink","飲む"],["sleep","ねる"],["play","遊ぶ"],
+["read","読む"],["write","書く"],["sing","歌う"],["dance","おどる"],["cook","料理する"],
+["study","勉強する"],["listen","聞く"],["look","見る"],["open","開ける"],["close","閉める"],
+["one","1"],["two","2"],["three","3"],["four","4"],["five","5"],
+["six","6"],["seven","7"],["eight","8"],["nine","9"],["ten","10"]
+];
+
+// ---------- 状態 ----------
+let session = [];
+let idx = 0;
+
+const startWrap = document.getElementById('startWrap');
+const practiceWrap = document.getElementById('practiceWrap');
+const resultWrap = document.getElementById('resultWrap');
+
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const clearBtn = document.getElementById('clearBtn');
+const speakBtn = document.getElementById('speakBtn');
+
+const progressLabel = document.getElementById('progressLabel');
+const progressFill = document.getElementById('progressFill');
+const wordMeaning = document.getElementById('wordMeaning');
+const resultWords = document.getElementById('resultWords');
+
+const stageWrap = document.getElementById('stageWrap');
+const guideCanvas = document.getElementById('guideCanvas');
+const drawCanvas = document.getElementById('drawCanvas');
+const correctBadge = document.getElementById('correctBadge');
+const gctx = guideCanvas.getContext('2d');
+const dctx = drawCanvas.getContext('2d');
+
+// なぞり判定専用のオフスクリーン（画面には出さない）マスクキャンバス
+const maskCanvas = document.createElement('canvas');
+const mctx = maskCanvas.getContext('2d');
+
+let solved = false;          // この単語をすでに正解判定したか
+const TRACE_THRESHOLD = 0.13; // 文字の塗りつぶし面積のうち、何割インクが乗ったら正解とみなすか
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startSession(){
+  session = shuffle(WORD_BANK).slice(0,20);
+  idx = 0;
+  startWrap.classList.add('hidden');
+  resultWrap.classList.remove('active');
+  practiceWrap.classList.add('active');
+  loadWord();
+}
+
+function showResult(){
+  practiceWrap.classList.remove('active');
+  resultWrap.classList.add('active');
+  resultWords.innerHTML = '';
+  session.forEach(([en]) => {
+    const span = document.createElement('span');
+    span.className = 'chip';
+    span.textContent = en;
+    resultWords.appendChild(span);
+  });
+}
+
+function loadWord(){
+  const [en, ja] = session[idx];
+  progressLabel.textContent = (idx+1) + ' / ' + session.length;
+  progressFill.style.width = Math.round(((idx+1)/session.length)*100) + '%';
+  wordMeaning.textContent = ja;
+  prevBtn.disabled = idx === 0;
+  nextBtn.textContent = idx === session.length - 1 ? 'おわる 🎉' : 'つぎへ →';
+  solved = false;
+  correctBadge.classList.remove('show');
+  drawCanvas.style.pointerEvents = 'auto';
+  sizeCanvases();
+  drawGuide(en);
+  drawMask(en);
+  clearDrawing();
+}
+
+function sizeCanvases(){
+  const width = stageWrap.clientWidth;
+  const height = Math.max(180, Math.min(260, Math.round(width * 0.45)));
+  const dpr = window.devicePixelRatio || 1;
+
+  [guideCanvas, drawCanvas].forEach(c => {
+    c.style.width = width + 'px';
+    c.style.height = height + 'px';
+    c.width = Math.round(width * dpr);
+    c.height = Math.round(height * dpr);
+  });
+  maskCanvas.width = Math.round(width * dpr);
+  maskCanvas.height = Math.round(height * dpr);
+
+  gctx.setTransform(dpr,0,0,dpr,0,0);
+  dctx.setTransform(dpr,0,0,dpr,0,0);
+  mctx.setTransform(dpr,0,0,dpr,0,0);
+  dctx.lineJoin = 'round';
+  dctx.lineCap = 'round';
+}
+
+function computeLayout(word, width, height){
+  const marginX = 20;
+  const usableW = width - marginX*2;
+  const baselineY = height * 0.66;
+  let fontSize = Math.min(height * 0.62, usableW / (word.length * 0.62));
+  fontSize = Math.max(28, Math.min(fontSize, 110));
+  const font = `800 ${fontSize}px 'Trebuchet MS', Verdana, sans-serif`;
+  gctx.font = font; // measureText only needs a context with the font set
+  const textWidth = gctx.measureText(word).width;
+  const startX = Math.max(marginX, (width - textWidth) / 2);
+  return { font, startX, baselineY, fontSize };
+}
+
+function drawGuide(word){
+  const width = guideCanvas.clientWidth;
+  const height = guideCanvas.clientHeight;
+  gctx.clearRect(0,0,width,height);
+
+  const marginX = 20;
+  const usableW = width - marginX*2;
+
+  // 4本の練習罫線 (上, 上部x-height線, ベースライン, 下)
+  const baselineY = height * 0.66;
+  const topLineY = height * 0.18;
+  const midLineY = height * 0.42;
+  const bottomLineY = height * 0.86;
+
+  gctx.save();
+  gctx.strokeStyle = '#AEC9D8';
+  gctx.lineWidth = 1.4;
+
+  gctx.setLineDash([6,6]);
+  [topLineY, midLineY, bottomLineY].forEach(y => {
+    gctx.beginPath();
+    gctx.moveTo(marginX, y);
+    gctx.lineTo(width - marginX, y);
+    gctx.stroke();
+  });
+
+  gctx.setLineDash([]);
+  gctx.strokeStyle = '#8FA9BC';
+  gctx.lineWidth = 2;
+  gctx.beginPath();
+  gctx.moveTo(marginX, baselineY);
+  gctx.lineTo(width - marginX, baselineY);
+  gctx.stroke();
+  gctx.restore();
+
+  // フォントサイズ・位置を単語の長さに合わせて計算（マスクと共通）
+  const { font, startX, fontSize } = computeLayout(word, width, height);
+  gctx.font = font;
+
+  // うすい塗りつぶしで文字の形を見せる
+  gctx.fillStyle = 'rgba(185,199,214,0.35)';
+  gctx.fillText(word, startX, baselineY);
+
+  // 点線のアウトライン
+  gctx.save();
+  gctx.strokeStyle = '#8FA9BC';
+  gctx.lineWidth = 2;
+  gctx.setLineDash([4,5]);
+  gctx.strokeText(word, startX, baselineY);
+  gctx.restore();
+
+  // 書き始めの目印（小さい矢印）
+  gctx.fillStyle = '#E8A93C';
+  gctx.beginPath();
+  gctx.arc(startX - 8, baselineY - fontSize*0.32, 3.5, 0, Math.PI*2);
+  gctx.fill();
+}
+
+// なぞり判定用：文字の塗りつぶし形状だけを（非表示の）マスクに描く
+function drawMask(word){
+  const width = guideCanvas.clientWidth;
+  const height = guideCanvas.clientHeight;
+  mctx.clearRect(0,0,width,height);
+  const baselineY = height * 0.66;
+  const { font, startX } = computeLayout(word, width, height);
+  mctx.font = font;
+  mctx.fillStyle = '#000';
+  mctx.fillText(word, startX, baselineY);
+}
+
+function clearDrawing(){
+  dctx.clearRect(0,0,drawCanvas.clientWidth, drawCanvas.clientHeight);
+}
+
+// 塗りつぶしマスクのうち、実際にインクが乗った割合を調べる
+function computeTraceCoverage(){
+  const w = maskCanvas.width, h = maskCanvas.height;
+  if(w === 0 || h === 0) return 0;
+  const maskData = mctx.getImageData(0,0,w,h).data;
+  const drawData = dctx.getImageData(0,0,w,h).data;
+  const step = 2; // 間引いてチェックし、負荷を抑える
+  let total = 0, covered = 0;
+  for(let y = 0; y < h; y += step){
+    const rowOffset = y * w;
+    for(let x = 0; x < w; x += step){
+      const i = (rowOffset + x) * 4;
+      if(maskData[i+3] > 120){
+        total++;
+        if(drawData[i+3] > 40) covered++;
+      }
+    }
+  }
+  return total === 0 ? 0 : covered / total;
+}
+
+function checkTraceAndAdvance(){
+  if(solved) return;
+  const coverage = computeTraceCoverage();
+  if(coverage >= TRACE_THRESHOLD){
+    solved = true;
+    drawCanvas.style.pointerEvents = 'none';
+    correctBadge.classList.add('show');
+    setTimeout(() => {
+      if(idx < session.length - 1){ idx++; loadWord(); }
+      else { showResult(); }
+    }, 1100);
+  }
+}
+
+// ---------- 手書き（マウス / タッチ）----------
+let drawing = false;
+let lastX = 0, lastY = 0;
+
+function getPos(e){
+  const rect = drawCanvas.getBoundingClientRect();
+  if(e.touches && e.touches.length){
+    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+  }
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function startDraw(e){
+  e.preventDefault();
+  drawing = true;
+  const p = getPos(e);
+  lastX = p.x; lastY = p.y;
+  dctx.beginPath();
+  dctx.moveTo(p.x, p.y);
+}
+function moveDraw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const p = getPos(e);
+  dctx.strokeStyle = '#2E4057';
+  dctx.lineWidth = 7;
+  dctx.lineTo(p.x, p.y);
+  dctx.stroke();
+  lastX = p.x; lastY = p.y;
+}
+function endDraw(e){
+  if(!drawing) return;
+  drawing = false;
+  checkTraceAndAdvance();
+}
+
+drawCanvas.addEventListener('mousedown', startDraw);
+drawCanvas.addEventListener('mousemove', moveDraw);
+window.addEventListener('mouseup', endDraw);
+
+drawCanvas.addEventListener('touchstart', startDraw, {passive:false});
+drawCanvas.addEventListener('touchmove', moveDraw, {passive:false});
+drawCanvas.addEventListener('touchend', endDraw);
+drawCanvas.addEventListener('touchcancel', endDraw);
+
+// ---------- ボタン ----------
+startBtn.addEventListener('click', startSession);
+restartBtn.addEventListener('click', startSession);
+
+prevBtn.addEventListener('click', () => {
+  if(idx > 0){ idx--; loadWord(); }
+});
+nextBtn.addEventListener('click', () => {
+  if(idx < session.length - 1){ idx++; loadWord(); }
+  else { showResult(); }
+});
+clearBtn.addEventListener('click', clearDrawing);
+
+speakBtn.addEventListener('click', () => {
+  if(!('speechSynthesis' in window)) return;
+  const [en] = session[idx];
+  const utter = new SpeechSynthesisUtterance(en);
+  utter.lang = 'en-US';
+  utter.rate = 0.82;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+});
+
+window.addEventListener('resize', () => {
+  if(practiceWrap.classList.contains('active')){
+    const [en] = session[idx];
+    sizeCanvases();
+    drawGuide(en);
+    drawMask(en);
+    clearDrawing();
+  }
+});
+</script>
+</body>
+</html>
