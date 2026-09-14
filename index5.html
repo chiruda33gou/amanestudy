@@ -412,7 +412,7 @@ const maskCanvas = document.createElement('canvas');
 const mctx = maskCanvas.getContext('2d');
 
 let solved = false;          // この単語をすでに正解判定したか
-const TRACE_THRESHOLD = 0.13; // 文字の塗りつぶし面積のうち、何割インクが乗ったら正解とみなすか
+const TRACE_THRESHOLD = 0.7; // 「最後の文字」の塗りつぶし面積のうち、何割インクが乗ったら正解とみなすか
 
 function shuffle(arr){
   const a = arr.slice();
@@ -552,7 +552,7 @@ function drawGuide(word){
   gctx.fill();
 }
 
-// なぞり判定用：文字の塗りつぶし形状だけを（非表示の）マスクに描く
+// なぞり判定用：単語の「最後の1文字」の塗りつぶし形状だけを（非表示の）マスクに描く
 function drawMask(word){
   const width = guideCanvas.clientWidth;
   const height = guideCanvas.clientHeight;
@@ -560,8 +560,13 @@ function drawMask(word){
   const baselineY = height * 0.66;
   const { font, startX } = computeLayout(word, width, height);
   mctx.font = font;
+
+  const prefix = word.slice(0, -1);
+  const lastChar = word.slice(-1);
+  const prefixWidth = prefix ? mctx.measureText(prefix).width : 0;
+
   mctx.fillStyle = '#000';
-  mctx.fillText(word, startX, baselineY);
+  mctx.fillText(lastChar, startX + prefixWidth, baselineY);
 }
 
 function clearDrawing(){
