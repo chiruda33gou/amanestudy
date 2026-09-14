@@ -344,6 +344,27 @@
     color:var(--ink);
   }
 
+  .overlay-word ruby{
+    font-family:'Shippori Mincho', serif;
+    font-size:44px;
+    font-weight:700;
+    color:var(--ink);
+    ruby-align:center;
+  }
+  .overlay-word rt{
+    font-family:'Zen Maru Gothic', sans-serif;
+    font-size:18px;
+    font-weight:800;
+    color:var(--vermillion);
+    letter-spacing:.02em;
+  }
+  .overlay-word .okuri{
+    font-family:'Shippori Mincho', serif;
+    font-size:44px;
+    font-weight:700;
+    color:var(--ink);
+  }
+
   @media (prefers-reduced-motion: reduce){
     .guide-stroke.active, .marker-pulse, .overlay.show .stamp{ animation:none; }
   }
@@ -384,6 +405,7 @@
       </svg>
 
       <div class="overlay" id="overlay">
+        <div class="overlay-word" id="overlay-word"></div>
         <div class="stamp">できた</div>
         <p id="overlay-msg">よくできました！</p>
         <button class="reset-btn" id="overlay-reset">もう一度書く</button>
@@ -1995,6 +2017,7 @@
   let totalStrokes = 0;
   let completedAll = false;
   let transitioning = false;
+  let autoAdvanceTimer = null;
   let drawing = false;
   let currentPoints = [];
   let dotsEls = [];
@@ -2009,6 +2032,7 @@
   const hintText = document.getElementById('hint-text');
   const overlay = document.getElementById('overlay');
   const overlayMsg = document.getElementById('overlay-msg');
+  const overlayWord = document.getElementById('overlay-word');
   const resetBtn = document.getElementById('reset-btn');
   const overlayResetBtn = document.getElementById('overlay-reset');
   const entryRow = document.getElementById('entry-row');
@@ -2220,11 +2244,19 @@
       completedAll = true;
       renderState();
       buildCharRow();
+      overlayWord.innerHTML = rubyHTML(currentEntry());
       overlayMsg.textContent = '\u300c' + currentEntry().label + '\u300d\u304c\u304b\u3051\u307e\u3057\u305f\uff01';
       setTimeout(()=> overlay.classList.add('show'), 250);
       masteredEntries.add(currentEntry().id);
       buildEntrySelector();
+      clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = setTimeout(advanceToNextEntry, 2600);
     }
+  }
+
+  function advanceToNextEntry(){
+    const next = (entryIndex + 1) % ENTRIES.length;
+    selectEntry(next);
   }
 
   function failAttempt(){
@@ -2266,6 +2298,7 @@
   }
 
   function selectEntry(i){
+    clearTimeout(autoAdvanceTimer);
     entryIndex = i;
     charIndex = 0;
     strokeIndex = 0;
@@ -2279,6 +2312,7 @@
   }
 
   function resetAll(){
+    clearTimeout(autoAdvanceTimer);
     charIndex = 0;
     strokeIndex = 0;
     completedAll = false;
@@ -2303,4 +2337,3 @@
 
 </body>
 </html>
-
