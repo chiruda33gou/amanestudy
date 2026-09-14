@@ -1991,6 +1991,8 @@
   // The practice list - single kanji or multi-character words made of the
   // characters above. Add a new line here to add a new practice item.
   const ENTRIES = [
+    { id:"ban",   label:"\u6669", chars:["\u6669"] },
+    { id:"rinji", label:"\u81e8\u6642", chars:["\u81e8","\u6642"], reading:"\u308a\u3093\u3058", meaning:"\u6c7a\u307e\u3063\u305f\u6642\u3067\u306f\u306a\u304f\u3001\u305d\u306e\u3068\u304d\u3069\u304d\u306b\u884c\u3046\u3053\u3068" },
     { id:"geshi", label:"\u590f\u81f3", chars:["\u590f","\u81f3"], reading:"\u3052\u3057", meaning:"\u4e00\u5e74\u3067\u3044\u3061\u3070\u3093\u663c\u304c\u9577\u3044\u65e5\uff08\u4e8c\u5341\u56db\u7bc0\u6c17\u306e\u3072\u3068\u3064\uff09" },
     { id:"ikou",  label:"\u4ee5\u964d", chars:["\u4ee5","\u964d"], reading:"\u3044\u3053\u3046", meaning:"\u305d\u308c\u3088\u308a\u5f8c\u3001\u305d\u308c\u304b\u3089\u3042\u3068" },
     { id:"shoka", label:"初夏", chars:["初", "夏"], reading:"しょか", meaning:"夏のはじめのころ" },
@@ -2003,8 +2005,8 @@
     { id:"kisetsu", label:"季節", chars:["季", "節"], reading:"きせつ", meaning:"一年を気候で分けた、春・夏・秋・冬など" },
     { id:"tankikan", label:"短期間", chars:["短", "期", "間"], reading:"たんきかん", meaning:"みじかい期間" },
     { id:"sassoku", label:"早速", chars:["早", "速"], reading:"さっそく", meaning:"すぐに、ただちに" },
-    { id:"sugite", label:"過ぎて", chars:["過", "ぎ", "て"], reading:"すぎて", meaning:"「過ぎる」のて形。時間や場所を通り過ぎること" },
-    { id:"kizashi", label:"兆し", chars:["兆", "し"], reading:"きざし", meaning:"物事が起こりそうな気配、前触れ" },
+    { id:"sugite", label:"過ぎて", chars:["過"], okurigana:"ぎて", reading:"すぎて", meaning:"「過ぎる」のて形。時間や場所を通り過ぎること" },
+    { id:"kizashi", label:"兆し", chars:["兆"], okurigana:"し", reading:"きざし", meaning:"物事が起こりそうな気配、前触れ" },
     { id:"yokuasa", label:"翌朝", chars:["翌", "朝"], reading:"よくあさ", meaning:"次の日の朝" },
     { id:"yokujitsu", label:"翌日", chars:["翌", "日"], reading:"よくじつ", meaning:"次の日" },
     { id:"enki", label:"延期", chars:["延", "期"], reading:"えんき", meaning:"予定の期日を先にのばすこと" },
@@ -2047,16 +2049,9 @@
 
   // Furigana helper: puts the word's reading over the kanji portion only,
   // leaving any trailing hiragana okurigana (e.g. \u3050 in \u904e\u304e\u3066) shown plain.
-  function isHiragana(ch){ return ch >= "\u3040" && ch <= "\u309f"; }
-
   function splitFurigana(entry){
-    const chars = entry.chars;
-    let kanjiCount = chars.length;
-    for (let i = 0; i < chars.length; i++){
-      if (isHiragana(chars[i])){ kanjiCount = i; break; }
-    }
-    const kanjiPart = chars.slice(0, kanjiCount).join('');
-    const okurigana = chars.slice(kanjiCount).join('');
+    const kanjiPart = entry.chars.join('');
+    const okurigana = entry.okurigana || '';
     let furigana = entry.reading || '';
     if (okurigana && furigana.endsWith(okurigana)){
       furigana = furigana.slice(0, furigana.length - okurigana.length);
@@ -2109,8 +2104,8 @@
   function updateInfoCard(){
     const entry = currentEntry();
     infoGlyph.textContent = entry.label;
-    infoGlyph.classList.toggle('two-char', entry.chars.length > 1);
-    if (entry.chars.length === 1){
+    infoGlyph.classList.toggle('two-char', entry.label.length > 1);
+    if (!entry.reading){
       const d = CHAR_DATA[entry.chars[0]];
       infoLines.innerHTML =
         '<div><b>\u97f3\u8aad\u307f</b>\u3000' + d.onyomi + '</div>' +
