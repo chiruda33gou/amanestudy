@@ -80,6 +80,14 @@ svg.sym text{fill:var(--ink);font-family:var(--f-glyph);font-weight:700}
 .primary{align-self:center;border:0;background:var(--ink);color:var(--paper);font:900 17px var(--f-body);padding:14px 36px;border-radius:999px;cursor:pointer}
 .primary:hover{background:var(--contour);color:#fff}
 
+.review{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--card);border:2px dashed var(--bad);border-radius:14px;padding:10px 14px;font-size:13px}
+.review span{min-width:0;flex:1 1 220px}
+.review b{display:block;font-size:15px;color:var(--bad)}
+.review.on{border-style:solid;background:var(--bad-bg)}
+.ghost{border:2px solid var(--ink);background:var(--card);color:var(--ink);font:700 14px var(--f-body);padding:8px 16px;border-radius:999px;cursor:pointer}
+.ghost:hover{background:var(--ink);color:var(--paper)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+.actions .ghost{padding:12px 24px;font-size:15px}
 .result{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
 .score{font-family:var(--f-display);font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
 .score span{font-size:24px;color:var(--muted)}
@@ -122,21 +130,10 @@ svg.sym text{fill:var(--ink);font-family:var(--f-glyph);font-weight:700}
 
 <script>
 const S = (d) => `<path class="s" d="${d}"/>`;
-function gear(){
-  const cx=50, cy=50, rO=36, rI=27, n=8, step=Math.PI*2/n, w=step*0.22;
-  const P=(r,t)=>`${(cx+r*Math.cos(t)).toFixed(1)} ${(cy+r*Math.sin(t)).toFixed(1)}`;
+function lighthouse(){
   let d="";
-  for(let i=0;i<n;i++){
-    const a=i*step-Math.PI/2;
-    d+=(i===0?"M":"L")+P(rI,a-w*1.3)+" L"+P(rO,a-w)+" L"+P(rO,a+w)+" L"+P(rI,a+w*1.3)+" ";
-    d+=`A${rI} ${rI} 0 0 1 ${P(rI,a+step-w*1.3)} `;
-  }
-  return `<path class="s" d="${d}Z"/><circle class="s" cx="50" cy="50" r="10"/>`;
-}
-function rays(){
-  let d="";
-  for(let i=0;i<8;i++){const t=i*Math.PI/4; d+=`M${(50+20*Math.cos(t)).toFixed(1)} ${(50+20*Math.sin(t)).toFixed(1)} L${(50+36*Math.cos(t)).toFixed(1)} ${(50+36*Math.sin(t)).toFixed(1)} `;}
-  return `<circle class="f" cx="50" cy="50" r="9"/>${S(d)}`;
+  for(let i=0;i<8;i++){const t=i*Math.PI/4, r2=(i%2?39:42); d+=`M${(50+22*Math.cos(t)).toFixed(1)} ${(50+22*Math.sin(t)).toFixed(1)} L${(50+r2*Math.cos(t)).toFixed(1)} ${(50+r2*Math.sin(t)).toFixed(1)} `;}
+  return `<circle class="s" cx="50" cy="50" r="22"/><circle class="f" cx="50" cy="50" r="7"/>${S(d)}`;
 }
 
 const KIGO = [
@@ -148,22 +145,26 @@ const KIGO = [
   {id:"yu",    name:"郵便局", yomi:"ゆうびんきょく", g:'<circle class="s" cx="50" cy="50" r="32"/>'+S("M35 37 H65 M35 49 H65 M50 49 V70"), note:"昔、郵便をあつかった逓信省（ていしんしょう）の「テ」がもと。"},
   {id:"gak",   name:"小・中学校", yomi:"しょう・ちゅうがっこう", g:'<text x="50" y="52" font-size="64" text-anchor="middle" dominant-baseline="central">文</text>', note:"「文」の字で、勉強する場所をあらわします。", pair:"kou"},
   {id:"kou",   name:"高等学校", yomi:"こうとうがっこう", g:'<circle class="s" cx="50" cy="50" r="34"/><text x="50" y="52" font-size="40" text-anchor="middle" dominant-baseline="central">文</text>', note:"「文」を丸でかこむと高等学校になります。", pair:"gak"},
-  {id:"byo",   name:"病院", yomi:"びょういん", g:'<circle class="s" cx="50" cy="50" r="32"/>'+S("M50 32 V68 M32 50 H68"), note:"昔の陸軍の衛生隊（えいせいたい）のしるしがもとになっています。"},
-  {id:"jin",   name:"神社", yomi:"じんじゃ", g:S("M16 28 Q50 38 84 28 M26 44 H74 M35 33 V82 M65 33 V82"), note:"神社の入り口に立っている「鳥居（とりい）」の形。", pair:"ji"},
+  {id:"byo",   name:"病院", yomi:"びょういん", g:S("M28 22 H72 V58 L50 80 L28 58 Z M50 33 V63 M36 47 H64"), note:"たての形に十字。昔の陸軍の衛生隊（えいせいたい）のしるしがもとです。", pair:"hoken"},
+  {id:"hoken", name:"保健所", yomi:"ほけんじょ", g:'<circle class="s" cx="50" cy="50" r="32"/>'+S("M50 29 V71 M29 50 H71"), note:"丸の中に十字。病院の記号（たての形）とまちがえないように。", pair:"byo"},
+  {id:"saiban", name:"裁判所", yomi:"さいばんしょ", g:S("M50 16 L77 62 H23 Z M50 62 V86"), note:"昔、裁判の内容を知らせた立て札（高札・こうさつ）の形。", pair:"zei"},
+  {id:"zei",   name:"税務署", yomi:"ぜいむしょ", g:S("M50 12 V36 M18 50 L50 36 L82 50 L50 64 Z M50 64 V88"), note:"そろばんの珠（たま）と軸（じく）の形。", pair:"saiban"},
+  {id:"jin",   name:"神社", yomi:"じんじゃ", g:S("M16 26 H84 M28 42 H72 M34 26 V84 M66 26 V84"), note:"神社の入り口に立っている「鳥居（とりい）」の形。", pair:"ji"},
   {id:"ji",    name:"寺院", yomi:"じいん", g:'<text x="50" y="52" font-size="66" text-anchor="middle" dominant-baseline="central">卍</text>', note:"仏教のしるし「卍（まんじ）」の形。", pair:"jin"},
-  {id:"tos",   name:"図書館", yomi:"としょかん", g:S("M18 34 Q34 26 50 34 Q66 26 82 34 V72 Q66 64 50 72 Q34 64 18 72 Z M50 34 V72"), note:"本を開いたようすをあらわした形。", pair:"hak"},
-  {id:"hak",   name:"博物館・美術館", yomi:"はくぶつかん・びじゅつかん", g:S("M20 42 L50 22 L80 42 Z M20 78 H80 M31 48 V72 M50 48 V72 M69 48 V72"), note:"博物館や美術館の建物の形。", pair:"rou"},
-  {id:"rou",   name:"老人ホーム", yomi:"ろうじん", g:S("M20 80 V46 L50 22 L80 46 V80 Z M56 72 V46 Q56 38 48 38 Q42 38 42 44"), note:"建物とつえの形。全国の小・中学生のアイデアから生まれた記号です。", pair:"hak"},
-  {id:"kojo",  name:"工場", yomi:"こうじょう", g:gear(), note:"機械の歯車（はぐるま）の形。"},
-  {id:"on",    name:"温泉", yomi:"おんせん", g:S("M24 58 Q24 82 50 82 Q76 82 76 58 M38 52 Q32 44 38 36 Q44 28 38 20 M50 52 Q44 44 50 36 Q56 28 50 20 M62 52 Q56 44 62 36 Q68 28 62 20"), note:"湯ぶねから湯気が立ちのぼる形。"},
-  {id:"tou",   name:"灯台", yomi:"とうだい", g:rays(), note:"光が四方八方に広がるようすをあらわした形。"},
-  {id:"ta",    name:"田", yomi:"た", g:S("M38 32 V68 M62 32 V68"), note:"稲をかりとったあとの切り株の形。", pair:"hata"},
-  {id:"hata",  name:"畑", yomi:"はたけ", g:S("M50 80 V52 M50 52 Q26 52 24 28 M50 52 Q74 52 76 28"), note:"植物の芽が出た「ふたば」の形。", pair:"ta"},
-  {id:"ka",    name:"果樹園", yomi:"かじゅえん", g:'<circle class="s" cx="50" cy="58" r="22"/>'+S("M50 36 Q50 24 60 18"), note:"りんごやなしなどの実を横から見た形。", pair:"kou-ju"},
-  {id:"cha",   name:"茶畑", yomi:"ちゃばたけ", g:'<circle class="s" cx="50" cy="30" r="12"/><circle class="s" cx="30" cy="66" r="12"/><circle class="s" cx="70" cy="66" r="12"/>', note:"お茶の実を半分に切った形。"},
-  {id:"kou-ju", name:"広葉樹林", yomi:"こうようじゅりん", g:'<ellipse class="s" cx="50" cy="42" rx="24" ry="20"/>'+S("M50 62 V84"), note:"さくらやけやきなど、葉の広い木を横から見た形。", pair:"shin"},
-  {id:"shin",  name:"針葉樹林", yomi:"しんようじゅりん", g:S("M26 60 L50 20 L74 60 M50 34 V84"), note:"すぎやまつなど、葉が針のように細い木を横から見た形。", pair:"kou-ju"},
-  {id:"hi",    name:"自然災害伝承碑", yomi:"しぜんさいがいでんしょうひ", g:S("M36 76 V36 L50 22 L64 36 V76 M24 76 H76 M50 38 V66"), note:"2019年にできた新しい記号。昔の災害を伝える石碑の場所をしめします。", pair:"hak"},
+  {id:"tos",   name:"図書館", yomi:"としょかん", g:S("M11.5 39 C16 30 32 24 46.5 28 C50 18 62 16 75.5 19 L88.5 65 C80 60 66 62 59.5 72 C50 68 34 70 25.5 83 Z M46.5 28 L59.5 72"), note:"本を開いたようすをあらわした形。", pair:"hak"},
+  {id:"hak",   name:"博物館・美術館", yomi:"はくぶつかん・びじゅつかん", g:S("M24 36 L50 16 L76 36 M13 37 H87 M23 37 V74 M41 37 V74 M59 37 V74 M77 37 V74 M13 74 H87"), note:"博物館や美術館の建物の形。", pair:"rou"},
+  {id:"rou",   name:"老人ホーム", yomi:"ろうじん", g:S("M11 50 L50 15 L89 50 M27 36 V88 M73 36 V88 M10 88 H90 M58 88 V48 A8 8 0 0 0 42 48 V59"), note:"建物とつえの形。全国の小・中学生のアイデアから生まれた記号です。", pair:"hak"},
+  {id:"shiro", name:"城跡", yomi:"しろあと", g:S("M22 82 V44 H36 V24 H64 V44 H78 V82"), note:"お城の石垣（いしがき）や天守を横から見た形。", pair:"hak"},
+  {id:"on",    name:"温泉", yomi:"おんせん", g:S("M24 53.5 A36 13 0 1 0 76 53.5 M32 57.5 C24 50 40 39 32 31 M50 55 C41 46 59 33 50 24 M68 57.5 C60 50 76 39 68 31"), note:"湯ぶねから湯気が立ちのぼる形。"},
+  {id:"tou",   name:"灯台", yomi:"とうだい", g:lighthouse(), note:"光が四方八方に広がるようすをあらわした形。"},
+  {id:"ta",    name:"田", yomi:"た", g:S("M40 34 V66 M60 34 V66"), note:"稲をかりとったあとの切り株の形。", pair:"hata"},
+  {id:"hata",  name:"畑", yomi:"はたけ", g:S("M30 38 L50 64 L70 38"), note:"植物の芽が出た「ふたば」の形。", pair:"ta"},
+  {id:"ka",    name:"果樹園", yomi:"かじゅえん", g:'<circle class="s" cx="50" cy="60" r="16"/>'+S("M50 44 V22"), note:"りんごやなしなどの実を横から見た形。", pair:"kou-ju"},
+  {id:"cha",   name:"茶畑", yomi:"ちゃばたけ", g:'<circle class="f" cx="50" cy="36" r="6"/><circle class="f" cx="34" cy="62" r="6"/><circle class="f" cx="66" cy="62" r="6"/>', note:"お茶の実を半分に切った形。"},
+  {id:"kou-ju", name:"広葉樹林", yomi:"こうようじゅりん", g:'<circle class="s" cx="44" cy="46" r="17"/>'+S("M44 63 H74"), note:"さくらやけやきなど、葉の広い木を横から見た形。", pair:"ka"},
+  {id:"shin",  name:"針葉樹林", yomi:"しんようじゅりん", g:S("M30 77 L44 23 L54 77 M47 77 H68"), note:"すぎやまつなど、葉が針のように細い木を横から見た形。", pair:"kou-ju"},
+  {id:"kinen", name:"記念碑", yomi:"きねんひ", g:S("M42 76 V50 A8 8 0 0 1 58 50 V76 M42 76 H66"), note:"記念碑（石碑）を横から見た形。", pair:"hi"},
+  {id:"hi",    name:"自然災害伝承碑", yomi:"しぜんさいがいでんしょうひ", g:S("M36 82 V34 A14 14 0 0 1 64 34 V82 M36 82 H74 M50 38 V70"), note:"記念碑の記号に、碑文をあらわすたて線を加えた形。2019年にできた新しい記号です。", pair:"kinen"},
 ];
 const byId = Object.fromEntries(KIGO.map(k=>[k.id,k]));
 const svg = (k, cls="sym") => `<svg class="sym ${cls}" viewBox="0 0 100 100" role="img" aria-label="地図記号">${k.g}</svg>`;
@@ -177,8 +178,12 @@ let st = null;
 const app = document.getElementById("app");
 const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a; };
 
-function makeQuestions(){
-  return shuffle(KIGO).slice(0,QN).map(k=>{
+const MISS_KEY = "chizu-miss";
+let missSet = new Set((()=>{ try{ return JSON.parse(store.get(MISS_KEY)||"[]"); }catch(e){ return []; } })().filter(id=>byId[id]));
+const saveMiss = () => store.set(MISS_KEY, JSON.stringify([...missSet]));
+
+function makeQuestions(pool){
+  return shuffle(pool).map(k=>{
     const others = KIGO.filter(o=>o.id!==k.id);
     let picks = [];
     if(k.pair && byId[k.pair]) picks.push(byId[k.pair]);
@@ -186,7 +191,27 @@ function makeQuestions(){
     return { ans:k, opts: shuffle([k,...picks]) };
   });
 }
-function start(){ st = { qs: makeQuestions(), i:0, score:0, answered:null, misses:[] }; render(); }
+function start(review=false){
+  if(review && !missSet.size) review = false;
+  const pool = review ? KIGO.filter(k=>missSet.has(k.id)) : shuffle(KIGO).slice(0,QN);
+  st = { review, qs: makeQuestions(pool), i:0, score:0, answered:null, misses:[], cleared:0 };
+  render(); window.scrollTo({top:0});
+}
+
+function reviewBar(){
+  if(st.review){
+    return `<div class="review on"><span><b>復習中</b>まちがえた記号だけを出題しています。正解すると復習リストから消えます。</span>
+      <button class="ghost" id="quit-review">ふつうのクイズにもどる</button></div>`;
+  }
+  if(!missSet.size) return "";
+  return `<div class="review"><span><b>復習リスト ${missSet.size}問</b>これまでにまちがえた記号がたまっています。</span>
+    <button class="ghost" id="go-review">まちがえた問題を復習</button></div>`;
+}
+function bindReview(){
+  const g=document.getElementById("go-review"), q=document.getElementById("quit-review");
+  if(g) g.onclick=()=>start(true);
+  if(q) q.onclick=()=>start(false);
+}
 
 function modeButtons(){
   return `<div class="modes" role="group" aria-label="クイズの種類">
@@ -199,7 +224,8 @@ function render(){
   document.getElementById("tab-quiz").setAttribute("aria-pressed", view==="quiz");
   document.getElementById("tab-list").setAttribute("aria-pressed", view==="list");
   if(view==="list") return renderList();
-  if(st.i>=QN) return renderResult();
+  const N = st.qs.length;
+  if(st.i>=N) return renderResult();
   const q = st.qs[st.i], a = st.answered;
   const prompt = mode==="sym2name"
     ? `<div class="qlabel">この地図記号は何をあらわしている？</div><div class="qsym">${svg(q.ans)}</div>`
@@ -215,17 +241,22 @@ function render(){
     const ok = a===q.ans.id;
     fb = `<div class="feedback ${ok?'ok':'ng'}" role="status"><div class="fsym">${svg(q.ans)}</div><div class="ftext">
       <b>${ok?"せいかい！":"ざんねん！"} 「${q.ans.name}」</b><p>${q.ans.note}</p></div></div>
-      <button class="primary" id="next">${st.i===QN-1?"結果を見る":"つぎの問題へ"}</button>`;
+      <button class="primary" id="next">${st.i===N-1?"結果を見る":"つぎの問題へ"}</button>`;
   }
-  app.innerHTML = `<div class="wrap" style="max-width:none">${modeButtons()}
-    <div class="progress"><span>${st.i+1} / ${QN} 問</span><div class="bar"><i style="width:${(st.i+(a?1:0))/QN*100}%"></i></div><span>${st.score} 点</span></div>
+  app.innerHTML = `<div class="wrap" style="max-width:none">${modeButtons()}${reviewBar()}
+    <div class="progress"><span>${st.i+1} / ${N} 問</span><div class="bar"><i style="width:${(st.i+(a?1:0))/N*100}%"></i></div><span>${st.score} 点</span></div>
     <section class="stage">${prompt}</section>
     <div class="choices">${opts}</div>${fb}</div>`;
-  bindModes();
+  bindModes(); bindReview();
   app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{
     if(st.answered) return;
     st.answered = b.dataset.id;
-    if(st.answered===q.ans.id) st.score++; else st.misses.push(q.ans);
+    if(st.answered===q.ans.id){
+      st.score++;
+      if(st.review && missSet.delete(q.ans.id)){ st.cleared++; saveMiss(); }
+    } else {
+      st.misses.push(q.ans); missSet.add(q.ans.id); saveMiss();
+    }
     render();
     const n=document.getElementById("next"); if(n) n.focus({preventScroll:true});
   });
@@ -234,24 +265,33 @@ function render(){
 }
 
 function bindModes(){
-  const set = m => { if(m===mode) return; mode=m; store.set("chizu-mode",m); start(); };
+  const set = m => { if(m===mode) return; mode=m; store.set("chizu-mode",m); start(st && st.review); };
   const m1=document.getElementById("m1"), m2=document.getElementById("m2");
   if(m1) m1.onclick=()=>set("sym2name"); if(m2) m2.onclick=()=>set("name2sym");
 }
 
 function renderResult(){
-  const key="chizu-best-"+mode, prev=+(store.get(key)||0);
-  if(st.score>prev) store.set(key,st.score);
-  const best=Math.max(prev,st.score);
-  const rank = st.score===10?"地図記号マスター！":st.score>=8?"あと少しで全問正解！":st.score>=5?"いい調子。まちがえた記号を見直そう":"ずかんで形と由来をたしかめてから、もう一度！";
-  const miss = st.misses.length ? `<div class="miss"><h3>まちがえた記号</h3><div class="misslist">${st.misses.map(k=>`<span class="chip"><span class="csym">${svg(k)}</span>${k.name}</span>`).join("")}</div></div>` : "";
+  const N = st.qs.length;
+  let rank, sub;
+  if(st.review){
+    rank = missSet.size ? `${st.cleared}問を復習リストから消しました` : "復習リストが空になりました！";
+    sub = missSet.size ? `のこり ${missSet.size}問。もう一度復習してみよう` : "まちがえた記号はぜんぶ覚えられました";
+  } else {
+    const key="chizu-best-"+mode, prev=+(store.get(key)||0);
+    if(st.score>prev) store.set(key,st.score);
+    rank = st.score===N?"地図記号マスター！":st.score>=8?"あと少しで全問正解！":st.score>=5?"いい調子。まちがえた記号を見直そう":"ずかんで形と由来をたしかめてから、もう一度！";
+    sub = `このモードのベスト：${Math.max(prev,st.score)} / ${N}`;
+  }
+  const miss = st.misses.length ? `<div class="miss"><h3>今回まちがえた記号</h3><div class="misslist">${st.misses.map(k=>`<span class="chip"><span class="csym">${svg(k)}</span>${k.name}</span>`).join("")}</div></div>` : "";
+  const reviewBtn = missSet.size ? `<button class="primary" id="review-btn">まちがえた問題を復習（${missSet.size}問）</button>` : "";
   app.innerHTML = `<div class="wrap" style="max-width:none">${modeButtons()}
-    <section class="stage result"><div class="qlabel">けっか</div>
-      <div class="score">${st.score}<span> / ${QN}</span></div>
-      <div class="rank">${rank}</div><div class="best">このモードのベスト：${best} / ${QN}</div>${miss}</section>
-    <button class="primary" id="again">もう一度チャレンジ</button></div>`;
+    <section class="stage result"><div class="qlabel">${st.review?"復習のけっか":"けっか"}</div>
+      <div class="score">${st.score}<span> / ${N}</span></div>
+      <div class="rank">${rank}</div><div class="best">${sub}</div>${miss}</section>
+    <div class="actions">${reviewBtn}<button class="${reviewBtn?'ghost':'primary'}" id="again">${st.review?"ふつうのクイズをする":"もう一度チャレンジ"}</button></div></div>`;
   bindModes();
-  document.getElementById("again").onclick=start;
+  document.getElementById("again").onclick=()=>start(false);
+  const rb=document.getElementById("review-btn"); if(rb) rb.onclick=()=>start(true);
 }
 
 function renderList(){
