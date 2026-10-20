@@ -58,7 +58,13 @@ h1{font-family:var(--f-text);font-weight:600;font-size:1.7rem;margin:0;text-wrap
 .tile.sel{border-color:var(--accent);background:var(--chip)}
 .tile.cand{border-style:dashed;border-color:var(--sub)}
 .tile.cand.r-s,.tile.cand.r-p{border-color:var(--accent);border-style:dashed}
-.tile.self{opacity:.5}
+.tile.lock{cursor:default;opacity:.6}
+.tile.lock:hover{background:transparent}
+.steps{display:flex;flex-wrap:wrap;gap:6px;font-size:.82rem}
+.st{padding:2px 10px;border-radius:99px;background:var(--chip);color:var(--sub);font-weight:700}
+.st.now.s{background:var(--s);color:var(--sheet)} .st.now.p{background:var(--p);color:var(--sheet)} .st.now.m{background:var(--m);color:var(--sheet)}
+.st.done.s{background:var(--s-bg);color:var(--s)} .st.done.p{background:var(--p-bg);color:var(--p)}
+.k-s{color:var(--s)} .k-p{color:var(--p)} .k-m{color:var(--m)}
 .tile .fix{font-size:.72rem;font-weight:700;color:var(--ng);white-space:nowrap;position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px}
 .tile .res{position:absolute;top:-6px;right:-4px;font-size:.9rem;font-weight:700}
 .tile.ok .res{color:var(--m)} .tile.ng .res{color:var(--ng)}
@@ -137,21 +143,18 @@ const Q=[
 ];
 const NAME={s:"主語",p:"述語",m:"修飾語"};
 const clean=s=>s.replace(/[。、]/g,"");
-let qi=0, ans, sel=null, mode="role", checked=false;
+// step 1=主語 2=述語 3=修飾語とかかり先 / mode "target" = 修飾語のかかり先をえらび中
+let qi=0, ans, step=1, sel=null, mode="pick", checked=false;
 const results=Array(Q.length).fill(null);
 const saved={};
 
 function load(i){
   qi=i; checked=results[i]!==null && saved[i]?true:false;
   ans=saved[i]?saved[i].map(a=>({...a})):Q[i].w.map(()=>({role:null,target:null}));
-  sel=checked?null:0; mode="role"; render();
+  step=1; sel=null; mode="pick"; render();
 }
 function complete(){return ans.every(a=>a.role && (a.role!=="m"||a.target!==null))}
-function nextOpen(from){
-  const n=ans.length;
-  for(let k=1;k<=n;k++){const j=(from+k)%n,a=ans[j]; if(!a.role||(a.role==="m"&&a.target===null))return j;}
-  return null;
-}
+function has(r){return ans.some(a=>a.role===r)}
 function correctAt(i){
   const q=Q[i===undefined?qi:i];
   return ans.map((a,j)=>a.role===q.r[j] && (q.r[j]!=="m"||a.target===q.t[j]));
@@ -167,8 +170,11 @@ function render(){
     const a=ans[i], b=document.createElement("button");
     b.className="tile"+(a.role?" r-"+a.role:"");
     if(!checked){
-      if(i===sel)b.classList.add(mode==="target"?"self":"sel");
-      if(mode==="target"&&i!==sel)b.classList.add("cand");
+      if(mode==="target"){ b.classList.add(i===sel?"sel":"cand"); }
+      else{
+        const usable=step===1||(step===2&&a.role!=="s")||(step===3&&a.role!=="s"&&a.role!=="p");
+        if(!usable)b.classList.add("lock");
+      }
     }else b.classList.add(ok[i]?"ok":"ng");
     b.dataset.i=i;
     b.setAttribute("aria-label",`${clean(w)}${a.role?"、"+NAME[a.role]:""}`);
@@ -213,19 +219,16 @@ function drawArrows(svg){
 
 function tap(i){
   if(checked)return;
-  if(mode==="target"){
-    if(i===sel)return;
-    ans[sel].target=i; mode="role";
-    const n=nextOpen(sel); sel=n; render(); return;
+  const a=ans[i];
+  if(step===1){ a.target=null; a.role=a.role==="s"?null:"s"; }
+  else if(step===2){ if(a.role==="s")return; a.target=null; a.role=a.role==="p"?null:"p"; }
+  else if(mode==="target"){ if(i===sel)return; ans[sel].target=i; mode="pick"; sel=null; }
+  else{
+    if(a.role==="s"||a.role==="p")return;
+    if(a.role!=="m"){a.role="m";a.target=null;}
+    sel=i; mode="target";
   }
-  sel=i; render();
-}
-function setRole(r){
-  const a=ans[sel];
-  if(r!=="m")a.target=null;
-  a.role=r;
-  if(r==="m"){mode="target";render();return;}
-  sel=nextOpen(sel); render();
+  render();
 }
 
 function renderPanel(){
@@ -241,27 +244,39 @@ function renderPanel(){
     p.querySelector("#next").onclick=()=>{const n=nextUnsolved(); n===null?showEnd():load(n)};
     return;
   }
-  let body="";
-  if(sel===null){
-    body=`<p class="prompt">ぜんぶ えらべたら、答え合わせをしよう</p><p class="help">直したいときは、言葉をもう一度タップしてね。</p>`;
+  const labels=[["s","① 主語"],["p","② 述語"],["m","③ 修飾語とかかり先"]];
+  const bar=`<div class="steps">${labels.map(([r,l],k)=>`<span class="st ${r}${k+1===step?" now":k+1<step?" done":""}">${k+1<step?"✓ ":""}${l}</span>`).join("")}</div>`;
+  let body="", back="", next="";
+  if(step===1){
+    body=`<p class="prompt">「だれが」「なにが」にあたる <b class="k-s">主語</b> をタップしよう</p>
+      <p class="help">主語が二つある文もあるよ。もう一度タップすると取り消せます。</p>`;
+    next=`<button class="b main" id="next" ${has("s")?"":"disabled"}>つぎへ（述語）</button>`;
+  }else if(step===2){
+    body=`<p class="prompt">「どうする」「どんなだ」「なんだ」にあたる <b class="k-p">述語</b> をタップしよう</p>
+      <p class="help">主語とペアになる言葉をさがそう。</p>`;
+    back=`<button class="b quiet" id="back">もどる</button>`;
+    next=`<button class="b main" id="next" ${has("p")?"":"disabled"}>つぎへ（修飾語）</button>`;
   }else if(mode==="target"){
     body=`<p class="prompt"><q>${clean(q.w[sel])}</q> は、どの言葉を くわしくしている？</p>
-      <p class="help">上の文の中から、くわしくしている言葉（主語か述語）をタップしよう。</p>
-      <div class="btns"><button class="b quiet" id="cancel">やめる</button></div>`;
+      <p class="help">くわしくしている言葉をタップしよう。</p>
+      <div class="btns"><button class="b quiet" id="cancel">やめる</button><button class="b quiet" id="unset">修飾語ではない</button></div>`;
   }else{
-    const cur=ans[sel].role;
-    body=`<p class="prompt"><q>${clean(q.w[sel])}</q> は、どれかな？</p>
-      <div class="btns">${["s","p","m"].map(r=>`<button class="b role-${r}${cur===r?" on":""}" data-r="${r}">${NAME[r]}</button>`).join("")}
-      ${cur==="m"?`<button class="b quiet" id="retarget">かかる言葉をえらび直す</button>`:""}</div>`;
+    const left=ans.filter(a=>!a.role).length;
+    body=`<p class="prompt">のこりの言葉から <b class="k-m">修飾語</b> をタップして、どの言葉をくわしくしているか えらぼう</p>
+      <p class="help">${left?`まだえらんでいない言葉が ${left}こ あるよ。`:"矢印をなおしたいときは、修飾語をもう一度タップしてね。"}</p>`;
+    back=`<button class="b quiet" id="back">もどる</button>`;
+    next=`<button class="b main" id="check" ${complete()?"":"disabled"}>答え合わせ</button>`;
   }
-  p.innerHTML=body+`<div class="actions"><button class="b quiet" id="clear">ぜんぶ消す</button><button class="b main" id="check" ${complete()?"":"disabled"}>答え合わせ</button></div>`;
-  p.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>setRole(b.dataset.r));
-  const c=p.querySelector("#cancel"); if(c)c.onclick=()=>{mode="role";render()};
-  const rt=p.querySelector("#retarget"); if(rt)rt.onclick=()=>{mode="target";render()};
-  p.querySelector("#clear").onclick=()=>{ans=Q[qi].w.map(()=>({role:null,target:null}));sel=0;mode="role";render()};
-  p.querySelector("#check").onclick=()=>{
+  p.innerHTML=bar+body+`<div class="actions"><div class="btns">${back}<button class="b quiet" id="clear">ぜんぶ消す</button></div>${next}</div>`;
+  const on=(id,f)=>{const e=p.querySelector("#"+id); if(e)e.onclick=f;};
+  on("next",()=>{step++;render()});
+  on("back",()=>{step--;mode="pick";sel=null;render()});
+  on("cancel",()=>{mode="pick";sel=null;render()});
+  on("unset",()=>{ans[sel].role=null;ans[sel].target=null;ans.forEach(a=>{if(a.target===sel)a.target=null});mode="pick";sel=null;render()});
+  on("clear",()=>{ans=Q[qi].w.map(()=>({role:null,target:null}));step=1;sel=null;mode="pick";render()});
+  on("check",()=>{
     checked=true; results[qi]=correctAt().every(Boolean); saved[qi]=ans.map(a=>({...a})); sel=null; render();
-  };
+  });
 }
 function nextUnsolved(){
   for(let k=1;k<=Q.length;k++){const j=(qi+k)%Q.length; if(results[j]===null)return j;}
