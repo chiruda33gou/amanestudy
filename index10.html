@@ -60,10 +60,28 @@ h1{font-family:var(--f-text);font-weight:600;font-size:1.7rem;margin:0;text-wrap
 .tile.cand.r-s,.tile.cand.r-p{border-color:var(--accent);border-style:dashed}
 .tile.lock{cursor:default;opacity:.6}
 .tile.lock:hover{background:transparent}
-.steps{display:flex;flex-wrap:wrap;gap:6px;font-size:.82rem}
-.st{padding:2px 10px;border-radius:99px;background:var(--chip);color:var(--sub);font-weight:700}
-.st.now.s{background:var(--s);color:var(--sheet)} .st.now.p{background:var(--p);color:var(--sheet)} .st.now.m{background:var(--m);color:var(--sheet)}
-.st.done.s{background:var(--s-bg);color:var(--s)} .st.done.p{background:var(--p-bg);color:var(--p)}
+.steps{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:6px}
+.st{appearance:none;border:2px solid var(--rule);background:var(--sheet);color:var(--sub);font:inherit;font-weight:700;font-size:.85rem;
+  padding:6px 8px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;min-width:0;text-align:center;line-height:1.3}
+.st:disabled{cursor:not-allowed;opacity:.5}
+.st:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.st .num{flex:none;width:1.5em;height:1.5em;border-radius:50%;display:grid;place-items:center;background:var(--chip);font-size:.8rem}
+.st.done.s{color:var(--s);border-color:var(--s-bg);background:var(--s-bg)} .st.done.p{color:var(--p);border-color:var(--p-bg);background:var(--p-bg)}
+.st.done .num{background:var(--sheet)}
+.st.now.s{background:var(--s);border-color:var(--s);color:var(--sheet)}
+.st.now.p{background:var(--p);border-color:var(--p);color:var(--sheet)}
+.st.now.m{background:var(--m);border-color:var(--m);color:var(--sheet)}
+.st.now .num{background:var(--sheet);color:var(--ink)}
+.now-banner{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;border-left:6px solid}
+.now-banner .lead{font-size:.9rem;font-weight:700}
+.now-banner strong{font-family:var(--f-text);font-size:2rem;line-height:1.2;font-weight:600}
+.now-banner .cnt{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.now-banner.s{background:var(--s-bg);color:var(--s);border-color:var(--s)}
+.now-banner.p{background:var(--p-bg);color:var(--p);border-color:var(--p)}
+.now-banner.m{background:var(--m-bg);color:var(--m);border-color:var(--m)}
+.sheet.at-s{box-shadow:0 0 0 3px var(--s)} .sheet.at-p{box-shadow:0 0 0 3px var(--p)} .sheet.at-m{box-shadow:0 0 0 3px var(--m)}
+.sheet.at-s .tile:not(.lock):hover{background:var(--s-bg)} .sheet.at-p .tile:not(.lock):hover{background:var(--p-bg)} .sheet.at-m .tile:not(.lock):hover{background:var(--m-bg)}
+@media (max-width:520px){.steps{grid-template-columns:1fr 1fr}.st.m{grid-column:1/-1}}
 .k-s{color:var(--s)} .k-p{color:var(--p)} .k-m{color:var(--m)}
 .tile .fix{font-size:.72rem;font-weight:700;color:var(--ng);white-space:nowrap;position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px}
 .tile .res{position:absolute;top:-6px;right:-4px;font-size:.9rem;font-weight:700}
@@ -111,12 +129,6 @@ button.b:disabled{opacity:.4;cursor:not-allowed}
     <div class="qno" id="qno"></div>
   </header>
 
-  <div class="guide" aria-label="ヒント">
-    <div class="g s"><b>主語</b><span>「だれが」「なにが」にあたる言葉。<span class="mark">犬が</span>・<span class="mark">ぼくは</span></span></div>
-    <div class="g p"><b>述語</b><span>「どうする」「どんなだ」「なんだ」にあたる言葉。<span class="mark">走る</span>・<span class="mark">青い</span></span></div>
-    <div class="g m"><b>修飾語</b><span>ほかの言葉を、くわしくする言葉。<span class="mark">白い</span>・<span class="mark">公園で</span></span></div>
-  </div>
-
   <div class="sheet"><div class="scroll"><div class="row" id="row"></div></div></div>
   <div class="panel" id="panel"></div>
   <nav class="dots" id="dots" aria-label="問題をえらぶ"></nav>
@@ -151,7 +163,7 @@ const saved={};
 function load(i){
   qi=i; checked=results[i]!==null && saved[i]?true:false;
   ans=saved[i]?saved[i].map(a=>({...a})):Q[i].w.map(()=>({role:null,target:null}));
-  step=1; sel=null; mode="pick"; render();
+  clearTimeout(advTimer); step=1; sel=null; mode="pick"; render();
 }
 function complete(){return ans.every(a=>a.role && (a.role!=="m"||a.target!==null))}
 function has(r){return ans.some(a=>a.role===r)}
@@ -166,6 +178,7 @@ function render(){
   const row=document.getElementById("row");
   const ok=checked?correctAt():null;
   row.innerHTML="";
+  document.querySelector(".sheet").className="sheet"+(checked?"":" at-"+["s","p","m"][step-1]);
   q.w.forEach((w,i)=>{
     const a=ans[i], b=document.createElement("button");
     b.className="tile"+(a.role?" r-"+a.role:"");
@@ -217,11 +230,19 @@ function drawArrows(svg){
   svg.innerHTML=out;
 }
 
+const need=r=>[...Q[qi].r].filter(x=>x===r).length;
+const count=r=>ans.filter(a=>a.role===r).length;
+let advTimer=null;
+function autoAdvance(from,r){
+  clearTimeout(advTimer);
+  if(count(r)!==need(r))return;
+  advTimer=setTimeout(()=>{ if(step===from&&!checked&&count(r)===need(r)){step=from+1;mode="pick";sel=null;render();} },550);
+}
 function tap(i){
   if(checked)return;
   const a=ans[i];
-  if(step===1){ a.target=null; a.role=a.role==="s"?null:"s"; }
-  else if(step===2){ if(a.role==="s")return; a.target=null; a.role=a.role==="p"?null:"p"; }
+  if(step===1){ a.target=null; a.role=a.role==="s"?null:"s"; render(); autoAdvance(1,"s"); return; }
+  else if(step===2){ if(a.role==="s")return; a.target=null; a.role=a.role==="p"?null:"p"; render(); autoAdvance(2,"p"); return; }
   else if(mode==="target"){ if(i===sel)return; ans[sel].target=i; mode="pick"; sel=null; }
   else{
     if(a.role==="s"||a.role==="p")return;
@@ -244,33 +265,39 @@ function renderPanel(){
     p.querySelector("#next").onclick=()=>{const n=nextUnsolved(); n===null?showEnd():load(n)};
     return;
   }
-  const labels=[["s","① 主語"],["p","② 述語"],["m","③ 修飾語とかかり先"]];
-  const bar=`<div class="steps">${labels.map(([r,l],k)=>`<span class="st ${r}${k+1===step?" now":k+1<step?" done":""}">${k+1<step?"✓ ":""}${l}</span>`).join("")}</div>`;
-  let body="", back="", next="";
+  const labels=[["s","主語"],["p","述語"],["m","修飾語とかかり先"]];
+  const can=k=>k===1||(k===2&&has("s"))||(k===3&&has("s")&&has("p"));
+  const bar=`<div class="steps" role="tablist">${labels.map(([r,l],k)=>{
+    const n=k+1, st=n===step?" now":n<step?" done":"";
+    return `<button class="st ${r}${st}" data-step="${n}" ${can(n)?"":"disabled"} ${n===step?'aria-current="step"':""}><span class="num">${n<step?"✓":n}</span>${l}</button>`;
+  }).join("")}</div>`;
+  const R=["s","p","m"][step-1];
+  let body="", next="";
   if(step===1){
-    body=`<p class="prompt">「だれが」「なにが」にあたる <b class="k-s">主語</b> をタップしよう</p>
-      <p class="help">主語が二つある文もあるよ。もう一度タップすると取り消せます。</p>`;
-    next=`<button class="b main" id="next" ${has("s")?"":"disabled"}>つぎへ（述語）</button>`;
+    const n=need("s"), c=count("s");
+    body=`<div class="now-banner s"><span class="lead">いま えらぶのは</span><strong>主語</strong><span class="cnt">${c} / ${n}</span></div>
+      <p class="prompt">「だれが」「なにが」にあたる言葉をタップしよう</p>
+      <p class="help">${n>1?`この文には主語が ${n}つ あるよ。`:""}えらび終わると、自動で述語に進みます。</p>`;
   }else if(step===2){
-    body=`<p class="prompt">「どうする」「どんなだ」「なんだ」にあたる <b class="k-p">述語</b> をタップしよう</p>
-      <p class="help">主語とペアになる言葉をさがそう。</p>`;
-    back=`<button class="b quiet" id="back">もどる</button>`;
-    next=`<button class="b main" id="next" ${has("p")?"":"disabled"}>つぎへ（修飾語）</button>`;
+    const n=need("p"), c=count("p");
+    body=`<div class="now-banner p"><span class="lead">いま えらぶのは</span><strong>述語</strong><span class="cnt">${c} / ${n}</span></div>
+      <p class="prompt">「どうする」「どんなだ」「なんだ」にあたる言葉をタップしよう</p>
+      <p class="help">${n>1?`この文には述語が ${n}つ あるよ。`:""}えらび終わると、自動で修飾語に進みます。</p>`;
   }else if(mode==="target"){
-    body=`<p class="prompt"><q>${clean(q.w[sel])}</q> は、どの言葉を くわしくしている？</p>
+    body=`<div class="now-banner m"><span class="lead">いま えらぶのは</span><strong>かかり先</strong></div>
+      <p class="prompt"><q>${clean(q.w[sel])}</q> は、どの言葉を くわしくしている？</p>
       <p class="help">くわしくしている言葉をタップしよう。</p>
       <div class="btns"><button class="b quiet" id="cancel">やめる</button><button class="b quiet" id="unset">修飾語ではない</button></div>`;
   }else{
     const left=ans.filter(a=>!a.role).length;
-    body=`<p class="prompt">のこりの言葉から <b class="k-m">修飾語</b> をタップして、どの言葉をくわしくしているか えらぼう</p>
-      <p class="help">${left?`まだえらんでいない言葉が ${left}こ あるよ。`:"矢印をなおしたいときは、修飾語をもう一度タップしてね。"}</p>`;
-    back=`<button class="b quiet" id="back">もどる</button>`;
+    body=`<div class="now-banner m"><span class="lead">いま えらぶのは</span><strong>修飾語</strong><span class="cnt">のこり ${left}</span></div>
+      <p class="prompt">のこりの言葉から修飾語をタップして、つぎに どの言葉をくわしくしているか タップしよう</p>
+      <p class="help">${left?"":"ぜんぶ えらべたね。答え合わせをしよう。矢印をなおすときは、修飾語をもう一度タップしてね。"}</p>`;
     next=`<button class="b main" id="check" ${complete()?"":"disabled"}>答え合わせ</button>`;
   }
-  p.innerHTML=bar+body+`<div class="actions"><div class="btns">${back}<button class="b quiet" id="clear">ぜんぶ消す</button></div>${next}</div>`;
+  p.innerHTML=bar+body+`<div class="actions"><button class="b quiet" id="clear">ぜんぶ消す</button>${next}</div>`;
+  p.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>{clearTimeout(advTimer);step=+b.dataset.step;mode="pick";sel=null;render()});
   const on=(id,f)=>{const e=p.querySelector("#"+id); if(e)e.onclick=f;};
-  on("next",()=>{step++;render()});
-  on("back",()=>{step--;mode="pick";sel=null;render()});
   on("cancel",()=>{mode="pick";sel=null;render()});
   on("unset",()=>{ans[sel].role=null;ans[sel].target=null;ans.forEach(a=>{if(a.target===sel)a.target=null});mode="pick";sel=null;render()});
   on("clear",()=>{ans=Q[qi].w.map(()=>({role:null,target:null}));step=1;sel=null;mode="pick";render()});
