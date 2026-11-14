@@ -1,238 +1,376 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>星座と一等星クイズ</title>
+<title>夜空を動く星ドリル</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
 <style>
-/* Layout: 星図のような夜空の地に、問題カードを4つの章（形・名前・位置・季節）で並べる */
+/* Layout: 星座早見盤のような濃紺の夜空に、1枚の問題カードが浮かぶ一列レイアウト。図は自前のSVG。 */
 :root{
-  --sky:#0e1530; --panel:#151e3f; --panel2:#1b2650; --rule:#2a3768;
-  --star:#ffe3a1; --star-dim:#c9d2f0; --line:#6b7cb8;
-  --fg:#e7eaf6; --muted:#9ea7cb;
-  --ok:#68d3ad; --ng:#ff8f7e; --label:#9fd0ff;
-  --display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
-  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --sky:#0e1631; --sky2:#162150; --panel:#1a2655; --panel2:#22306a;
+  --ink:#eef0fa; --mute:#a6aed4; --line:#5d6cab;
+  --gold:#f5c95b; --gold-ink:#2a1e00;
+  --ok:#7fdcb7; --ng:#ff9a9a; --ground:#0a1026;
+  --display:"Kiwi Maru","Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
+  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;
   color-scheme:dark;
 }
-body{background:var(--sky);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.7;
-  background-image:radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 78% 9%,#fff6 50%,transparent 51%),radial-gradient(1.5px 1.5px at 55% 32%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 33% 64%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 88% 52%,#fff6 50%,transparent 51%);
-  background-attachment:fixed}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--sky)}
-.wrap{max-width:1080px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header h1{font-family:var(--display);font-weight:900;font-size:clamp(28px,6vw,44px);line-height:1.2;margin:0;text-wrap:balance;letter-spacing:.04em}
-header p{color:var(--muted);margin:8px 0 0;max-width:62ch}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-top:20px;background:color-mix(in srgb,var(--sky) 88%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
-.bar .score{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:14px}
-.bar .score b{color:var(--star);font-size:18px}
-.bar nav{display:flex;flex-wrap:wrap;gap:6px;flex:1}
-.bar nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:99px}
-.bar nav a:hover,.bar nav a:focus-visible{color:var(--fg);border-color:var(--line)}
-button{font:inherit;color:inherit;cursor:pointer}
-.reset{background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 12px;font-size:13px;color:var(--muted)}
-.reset:hover{color:var(--fg);border-color:var(--line)}
-:focus-visible{outline:2px solid var(--label);outline-offset:2px}
-section{margin-top:44px}
-section h2{font-family:var(--display);font-size:24px;margin:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-section h2 small{font-family:var(--body);font-size:13px;color:var(--muted);font-weight:400}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:16px}
-.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.qno{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em}
-.card svg{width:100%;max-width:100%;aspect-ratio:1;display:block;background:var(--panel2);border-radius:6px}
-.prompt{font-weight:700;margin:0}
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.choices.four{grid-template-columns:repeat(4,1fr)}
-.choices button{background:var(--panel2);border:1px solid var(--rule);border-radius:6px;padding:7px 6px;font-size:14px;line-height:1.35}
-.choices button:hover:not(:disabled){border-color:var(--line);background:#223064}
-.choices button:disabled{cursor:default;opacity:.55}
-.choices button.ok{border-color:var(--ok);color:var(--ok);opacity:1;font-weight:700}
-.choices button.ng{border-color:var(--ng);color:var(--ng);opacity:1}
-.fb{font-size:13.5px;color:var(--muted);margin:0}
-.fb strong{display:block;font-size:14px}
-.fb strong.ok{color:var(--ok)} .fb strong.ng{color:var(--ng)}
-details{margin-top:48px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 16px}
-summary{cursor:pointer;font-weight:700}
-.tbl{overflow-x:auto;margin-top:12px}
-table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
-th,td{border-bottom:1px solid var(--rule);padding:7px 8px;text-align:left;vertical-align:top}
-th{color:var(--muted);font-weight:500;font-size:12px;letter-spacing:.06em}
-td.mag{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--star)}
-@media (max-width:420px){.choices.four{grid-template-columns:1fr 1fr}}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--sky);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--mute)}
+h1{font-family:var(--display);font-weight:500;font-size:clamp(26px,6vw,36px);line-height:1.25;margin:2px 0 0;text-wrap:balance}
+h1 .g{color:var(--gold)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--gold);width:18px;height:18px}
+ruby rt{font-size:.5em;color:var(--mute);font-weight:400}
+.card{background:linear-gradient(180deg,var(--panel),var(--sky2));border:1px solid var(--line);border-radius:18px;padding:22px clamp(16px,4vw,28px);display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--display);font-weight:500;font-size:19px;margin:0}
+.lead{margin:0;color:var(--mute);font-size:14px}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.cat{position:relative}
+.cat input{position:absolute;opacity:0;inset:0}
+.cat label{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;min-height:72px;transition:border-color .15s,background .15s}
+.cat label b{font-weight:700}
+.cat label span{font-size:12px;color:var(--mute)}
+.cat input:checked+label{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
+.cat input:focus-visible+label{outline:2px solid var(--gold);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
+.seg input{position:absolute;opacity:0;width:0;height:0}
+.seg label{padding:6px 16px;cursor:pointer;font-size:14px}
+.seg input:checked+label{background:var(--gold);color:var(--gold-ink);font-weight:700}
+.seg input:focus-visible+label{outline:2px solid var(--ink);outline-offset:-3px}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--gold);color:var(--gold-ink);border:0;border-radius:999px;padding:12px 26px;font-weight:700;font-size:16px}
+.btn:hover{filter:brightness(1.07)}
+.btn.sub{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.best{font-size:13px;color:var(--mute)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:4px;flex-wrap:wrap}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.dots i.ok{background:var(--gold)} .dots i.ng{background:var(--ng)} .dots i.now{outline:2px solid var(--ink);outline-offset:1px}
+.tag{align-self:flex-start;font-size:12px;letter-spacing:.06em;padding:2px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
+.q{font-size:18px;font-weight:500;margin:0;line-height:1.8}
+.note{font-size:13px;color:var(--mute);margin:-6px 0 0}
+.figbox{background:var(--ground);border-radius:12px;padding:10px;overflow-x:auto}
+.fig{width:100%;max-width:440px;height:auto;display:block;margin:0 auto}
+.fig text{fill:var(--ink);font-family:var(--body);font-size:13px}
+.fig .sm{font-size:11px;fill:var(--mute)}
+.fig .hl{fill:var(--gold);font-weight:700}
+.fig .dash{stroke:var(--line);stroke-dasharray:3 4;fill:none;stroke-width:1}
+.fig .ln{stroke:var(--mute);stroke-width:1.6;fill:none}
+.fig .gl{stroke:var(--gold);stroke-width:2;fill:none}
+.fig .gd{stroke:var(--gold);stroke-width:1.6;fill:none;stroke-dasharray:4 4}
+.fig .st{fill:var(--gold)}
+.fig .dot{fill:var(--ink)}
+.fig .pt{fill:var(--mute)}
+.fig .gnd{fill:#26305e}
+.fig .hz{stroke:var(--line);stroke-width:1.5}
+.fig .ring{fill:none;stroke:var(--gold);stroke-width:2}
+.opts{display:grid;gap:10px}
+.opts.grid4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:420px){.opts.grid4{grid-template-columns:repeat(2,1fr)}}
+.opt{text-align:left;background:var(--panel2);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.6}
+.opts.grid4 .opt{text-align:center;font-size:18px}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--panel2))}
+.opt.ng{border-color:var(--ng);background:color-mix(in srgb,var(--ng) 16%,var(--panel2))}
+.num{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.num input{font:inherit;font-size:22px;width:120px;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);font-variant-numeric:tabular-nums}
+.num input:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+.num .unit{font-size:18px}
+.fb{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:var(--panel2)}
+.fb.ok{border-left:4px solid var(--ok)} .fb.ng{border-left:4px solid var(--ng)}
+.fb .v{font-weight:700;font-size:17px}
+.fb.ok .v{color:var(--ok)} .fb.ng .v{color:var(--ng)}
+.fb p{margin:0;font-size:15px}
+.score{font-family:var(--display);font-size:56px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums;margin:0}
+.score small{font-size:24px;color:var(--mute)}
+.stars{display:flex;gap:6px;flex-wrap:wrap}
+.stars svg{width:24px;height:24px}
+.miss{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.miss li{background:var(--panel2);border-radius:10px;padding:10px 14px;font-size:14px}
+.miss li b{color:var(--gold)}
+footer{font-size:12px;color:var(--mute);text-align:center}
+@media (prefers-reduced-motion:no-preference){.card{animation:rise .28s ease-out}@keyframes rise{from{transform:translateY(6px)}to{transform:none}}}
 </style>
 
+<canvas id="sky" aria-hidden="true"></canvas>
 <div class="wrap">
   <header>
-    <h1>星座と一等星クイズ</h1>
-    <p>9つの星座を、形・一等星の名前・一等星の位置・見える季節の4つの面から出題します。選択肢をタップすると答えと解説が出ます。図の大きな星ほど明るい星です。</p>
+    <div>
+      <div class="eyebrow">第5回 天体の観測</div>
+      <h1>夜空を動く<span class="g">星</span>ドリル</h1>
+    </div>
+    <label class="toggle"><input type="checkbox" id="furi" checked> ふりがな</label>
   </header>
-  <div class="bar">
-    <div class="score">正解 <b id="ok">0</b> / 回答 <span id="ans">0</span> / 全<span id="total">0</span>問</div>
-    <nav><a href="#katachi">形</a><a href="#namae">名前</a><a href="#ichi">位置</a><a href="#kisetsu">季節</a><a href="#hayami">早見表</a></nav>
-    <button class="reset" id="reset" type="button">はじめからやり直す</button>
-  </div>
-
-  <section id="katachi"><h2>第1章　形から当てる <small>星の並びを見て、星座の名前を選ぼう</small></h2><div class="grid" id="g1"></div></section>
-  <section id="namae"><h2>第2章　一等星の名前 <small>その星座でいちばん目立つ星は？</small></h2><div class="grid" id="g2"></div></section>
-  <section id="ichi"><h2>第3章　一等星の位置 <small>図のア〜エのうち、どの星？</small></h2><div class="grid" id="g3"></div></section>
-  <section id="kisetsu"><h2>第4章　見える季節 <small>夜、見ごろになるのはいつ？</small></h2><div class="grid" id="g4"></div></section>
-
-  <details id="hayami"><summary>早見表（答えの一覧）</summary>
-    <div class="tbl"><table>
-      <thead><tr><th>星座</th><th>一等星</th><th>等級</th><th>星座の中の位置</th><th>季節</th></tr></thead>
-      <tbody id="tb"></tbody>
-    </table></div>
-  </details>
+  <main id="app"></main>
+  <footer>北極星の見つけ方・星の1日の動き・1か月の動き・季節の星座</footer>
 </div>
 
 <script>
-// 星の座標は 0〜100 の枠内。[x, y, 等級(図の大きさ用)]
-const D = {
- cyg:{name:'はくちょう座',season:'夏',
-  stars:{deneb:[50,8,1],sadr:[50,40,2],eta:[50,63,3],albireo:[50,92,3],gienah:[28,48,2],zeta:[10,63,3],delta:[72,32,3],kappa:[90,18,3]},
-  lines:[['deneb','sadr'],['sadr','eta'],['eta','albireo'],['zeta','gienah'],['gienah','sadr'],['sadr','delta'],['delta','kappa']],
-  shapeOpts:['はくちょう座','わし座','ペガスス座','こと座'],
-  shapeExp:'大きな十字形が目印で「北十字」とも呼ばれます。はくちょうが翼を広げて天の川を飛ぶ姿です。',
-  nameOpts:['デネブ','ベガ','アルタイル','レグルス'],nameAns:'デネブ',
-  nameExp:'デネブは夏の大三角の一つ。とても遠くにある、ほんとうはけた外れに明るい星です。',
-  pos:[{q:'デネブはどの星？',labels:{deneb:'ア',sadr:'イ',albireo:'ウ'},ans:'ア',exp:'デネブははくちょうの尾にあたります。ウのくちばしの星はアルビレオで、望遠鏡で見ると青と金色の二重星です。'}],
-  posText:'尾（十字の上のはし）',mag:'1.3',
-  seasonExp:'デネブ・ベガ・アルタイルで「夏の大三角」をつくります。'},
- lyr:{name:'こと座',season:'夏',
-  stars:{vega:[44,12,1],eps:[66,10,4],zeta:[42,40,3],delta:[63,45,3],gamma:[58,86,3],beta:[36,81,3]},
-  lines:[['vega','zeta'],['vega','eps'],['zeta','delta'],['delta','gamma'],['gamma','beta'],['beta','zeta']],
-  shapeOpts:['こと座','こいぬ座','しし座','はくちょう座'],
-  shapeExp:'小さな平行四辺形と、その先にかがやく明るい星。ギリシャ神話のオルフェウスの竪琴です。',
-  nameOpts:['ベガ','デネブ','スピカ','アンタレス'],nameAns:'ベガ',
-  nameExp:'ベガは七夕の「おりひめ（織女星）」。白く強くかがやく星です。',
-  pos:[{q:'ベガはどの星？',labels:{gamma:'ア',vega:'イ',beta:'ウ'},ans:'イ',exp:'ベガは平行四辺形から少しはなれた先のはしにあり、竪琴の頭の部分にあたります。'}],
-  posText:'平行四辺形から離れた先端（竪琴の頭）',mag:'0.0',
-  seasonExp:'夏の大三角の一つ。夏の夜、頭の真上近くに見えます。'},
- aql:{name:'わし座',season:'夏',
-  stars:{tarazed:[39,35,3],altair:[50,46,1],alshain:[61,57,3],zeta:[26,12,3],delta:[42,68,3],lambda:[22,90,3],eta:[62,78,4],theta:[80,84,3]},
-  lines:[['tarazed','altair'],['altair','alshain'],['altair','delta'],['delta','lambda'],['delta','eta'],['eta','theta'],['tarazed','zeta']],
-  shapeOpts:['わし座','はくちょう座','おおいぬ座','さそり座'],
-  shapeExp:'明るい星を、左右から暗めの星2つがはさむように一直線に並ぶのが目印です。',
-  nameOpts:['アルタイル','ベガ','プロキオン','アークトゥルス'],nameAns:'アルタイル',
-  nameExp:'アルタイルは七夕の「ひこぼし（牽牛星）」。天の川をはさんでベガと向かい合います。',
-  pos:[{q:'アルタイルはどの星？',labels:{zeta:'ア',altair:'イ',lambda:'ウ'},ans:'イ',exp:'アルタイルは3つ並んだ星のまん中、わしの首（頭）のあたりにあります。'}],
-  posText:'3つ並んだ星のまん中（わしの首）',mag:'0.8',
-  seasonExp:'夏の大三角の一つ。ベガとともに七夕の星として知られます。'},
- sco:{name:'さそり座',season:'夏',
-  stars:{beta:[80,10,2],delta:[84,22,2],pi:[81,34,3],sigma:[63,29,3],antares:[55,36,1],tau:[50,43,3],eps:[45,53,2],mu:[42,65,3],zeta:[41,77,3],eta:[46,87,3],theta:[58,93,2],iota:[71,89,3],kappa:[73,79,3],shaula:[64,74,2]},
-  lines:[['beta','delta'],['delta','pi'],['delta','sigma'],['sigma','antares'],['antares','tau'],['tau','eps'],['eps','mu'],['mu','zeta'],['zeta','eta'],['eta','theta'],['theta','iota'],['iota','kappa'],['kappa','shaula']],
-  shapeOpts:['さそり座','しし座','オリオン座','わし座'],
-  shapeExp:'S字にくねった長い尾が目印。尾の先は釣り針のように曲がっています。',
-  nameOpts:['アンタレス','ベテルギウス','スピカ','アルデバラン'],nameAns:'アンタレス',
-  nameExp:'アンタレスは赤い一等星。赤さが火星に負けないことから「火星に対抗するもの」という意味の名前です。',
-  pos:[{q:'アンタレスはどの星？',labels:{beta:'ア',antares:'イ',shaula:'ウ'},ans:'イ',exp:'アンタレスはさそりの心臓にあたります。ウは尾の先の毒針、アは頭のあたりの星です。'}],
-  posText:'心臓',mag:'1.0',
-  seasonExp:'夏の南の低い空に見えます。さそりに刺されたオリオンが逃げるので、2つは同じ夜空に並ばないと言われます。'},
- ori:{name:'オリオン座',season:'冬',
-  stars:{betel:[27,22,1],bellat:[71,26,2],meissa:[48,8,3],delta:[60,50,2],eps:[50,54,2],zeta:[40,58,2],saiph:[31,88,2],rigel:[74,84,1]},
-  lines:[['betel','meissa'],['meissa','bellat'],['betel','bellat'],['betel','zeta'],['bellat','delta'],['delta','eps'],['eps','zeta'],['zeta','saiph'],['delta','rigel']],
-  shapeOpts:['オリオン座','ペガスス座','おおいぬ座','はくちょう座'],
-  shapeExp:'砂時計のような形と、まん中にななめに並ぶ「三つ星」が目印です。',
-  nameOpts:['ベテルギウスとリゲル','ベテルギウスとシリウス','リゲルとプロキオン','ベガとアルタイル'],nameAns:'ベテルギウスとリゲル',
-  namePrompt:'オリオン座には一等星が2つ。その組み合わせは？',
-  nameExp:'赤いベテルギウスと青白いリゲル。色のちがいは星の表面温度のちがいで、赤いほど温度が低い星です。',
-  pos:[
-   {q:'ベテルギウスはどの星？',labels:{betel:'ア',bellat:'イ',eps:'ウ',rigel:'エ'},ans:'ア',exp:'ベテルギウスはオリオンの右肩（図では左上）の赤い星です。'},
-   {q:'リゲルはどの星？',labels:{betel:'ア',bellat:'イ',eps:'ウ',rigel:'エ'},ans:'エ',exp:'リゲルはオリオンの左ひざ（図では右下）の青白い星です。ウは三つ星のまん中の星です。'}],
-  posText:'ベテルギウス＝右肩（図の左上）／リゲル＝左ひざ（図の右下）',mag:'0.5 / 0.1',firstName:'ベテルギウス・リゲル',
-  seasonExp:'冬の代表的な星座。ベテルギウスは冬の大三角の一つです。'},
- cmi:{name:'こいぬ座',season:'冬',
-  stars:{procyon:[32,66,1],gomeisa:[66,36,3]},
-  lines:[['procyon','gomeisa']],
-  shapeOpts:['こいぬ座','こと座','おおいぬ座','わし座'],
-  shapeExp:'星2つを結んだだけの小さな星座。明るい星と暗い星の組み合わせです。',
-  nameOpts:['プロキオン','シリウス','ポルックス','レグルス'],nameAns:'プロキオン',
-  nameExp:'プロキオンは「犬の前に」という意味。おおいぬ座のシリウスより先にのぼってきます。',
-  pos:[{q:'プロキオンはどの星？',labels:{procyon:'ア',gomeisa:'イ'},ans:'ア',exp:'2つの星のうち明るいほうがプロキオン。イはゴメイサという3等星です。'}],
-  posText:'2つの星のうち明るいほう',mag:'0.4',
-  seasonExp:'冬の大三角の一つ。'},
- cma:{name:'おおいぬ座',season:'冬',
-  stars:{sirius:[38,26,1],mirzam:[15,22,2],iota:[46,10,4],o2:[51,46,3],wezen:[58,62,2],adhara:[52,87,2],aludra:[85,80,2]},
-  lines:[['sirius','mirzam'],['sirius','iota'],['sirius','o2'],['o2','wezen'],['wezen','adhara'],['wezen','aludra']],
-  shapeOpts:['おおいぬ座','こいぬ座','しし座','オリオン座'],
-  shapeExp:'とても明るい星から体がのび、足と尾がつく大きな犬の姿です。',
-  nameOpts:['シリウス','プロキオン','リゲル','カペラ'],nameAns:'シリウス',
-  nameExp:'シリウスは夜空でいちばん明るい恒星（−1.5等）。「焼きこがすもの」という意味です。',
-  pos:[{q:'シリウスはどの星？',labels:{sirius:'ア',wezen:'イ',aludra:'ウ'},ans:'ア',exp:'シリウスは犬の口元（鼻先）にあたります。ウは尾の星です。'}],
-  posText:'口元（鼻先）',mag:'−1.5',
-  seasonExp:'冬の大三角の一つ。ベテルギウス・シリウス・プロキオンを結びます。'},
- leo:{name:'しし座',season:'春',
-  stars:{regulus:[24,66,1],eta:[27,49,3],algieba:[34,36,2],zeta:[29,21,3],mu:[17,12,3],eps:[8,22,3],delta:[72,36,2],theta:[69,50,3],denebola:[93,52,2]},
-  lines:[['eps','mu'],['mu','zeta'],['zeta','algieba'],['algieba','eta'],['eta','regulus'],['algieba','delta'],['delta','denebola'],['denebola','theta'],['theta','regulus']],
-  shapeOpts:['しし座','さそり座','おおいぬ座','ペガスス座'],
-  shapeExp:'「？」を裏返したような星の並び（ししの大がま）が、ライオンの頭とたてがみです。',
-  nameOpts:['レグルス','デネボラ','スピカ','アークトゥルス'],nameAns:'レグルス',
-  nameExp:'レグルスは「小さな王」という意味。尾のデネボラは2等星なので一等星ではありません。',
-  pos:[{q:'レグルスはどの星？',labels:{regulus:'ア',algieba:'イ',denebola:'ウ'},ans:'ア',exp:'レグルスは「？」の点の位置、ししの心臓（胸）にあたります。ウは尾のデネボラです。'}],
-  posText:'心臓（大がまの「？」の点）',mag:'1.4',
-  seasonExp:'春の夜空の星座。尾のデネボラは、アークトゥルス・スピカとともに「春の大三角」をつくります。'},
- peg:{name:'ペガスス座',season:'秋',
-  stars:{scheat:[70,30,2],alpheratz:[26,30,2],algenib:[26,72,2],markab:[70,72,2],zeta:[82,82,3],theta:[90,72,3],enif:[98,88,2],eta:[84,16,3],pi:[97,8,4],mu:[85,38,3],lambda:[97,34,4]},
-  lines:[['scheat','alpheratz'],['alpheratz','algenib'],['algenib','markab'],['markab','scheat'],['markab','zeta'],['zeta','theta'],['theta','enif'],['scheat','eta'],['eta','pi'],['scheat','mu'],['mu','lambda']],
-  shapeOpts:['ペガスス座','こと座','オリオン座','しし座'],
-  shapeExp:'大きな四角形（秋の四辺形）が胴体。翼を持つ天馬ペガススの上半身です。',
-  nameOpts:['一等星はない','マルカブ','アルフェラッツ','エニフ'],nameAns:'一等星はない',
-  namePrompt:'ペガスス座の一等星の名前は？',
-  nameExp:'ひっかけ問題。ペガスス座に一等星はありません。四辺形の星はどれも2等星です。',
-  pos:[{q:'秋の四辺形のうち、ペガスス座の星ではないのはどれ？',labels:{alpheratz:'ア',scheat:'イ',markab:'ウ',algenib:'エ'},ans:'ア',exp:'アのアルフェラッツはとなりのアンドロメダ座の星。四辺形は2つの星座にまたがっています。'}],
-  posText:'一等星なし（四辺形はすべて2等星）',mag:'—',firstName:'なし',
-  seasonExp:'秋の四辺形が目印。秋の夜空は明るい星が少なく、この四角形が星さがしの手がかりになります。'}
-};
-const ORDER=['cyg','lyr','aql','sco','ori','cmi','cma','leo','peg'];
-const SEASONS=['春','夏','秋','冬'];
-const NO_NP=['leo','peg']; // 名前・位置の問題を出さない星座
-const MAGR={1:5.2,2:3.4,3:2.4,4:1.7};
+/* ---------- ふりがな ---------- */
+const RUBY={'反時計回り':'はんとけいまわり','時計回り':'とけいまわり','北斗七星':'ほくとしちせい','北極星':'ほっきょくせい','方角':'ほうがく','星座':'せいざ','等星':'とうせい','観察':'かんさつ','撮影':'さつえい'};
+const RUBY_RE=new RegExp(Object.keys(RUBY).sort((a,b)=>b.length-a.length).join('|'),'g');
+let furi=true;
+const rb=s=>furi?String(s).replace(RUBY_RE,m=>`<ruby>${m}<rt>${RUBY[m]}</rt></ruby>`):String(s);
 
-function rot(arr,n){n%=arr.length;return arr.slice(n).concat(arr.slice(0,n));}
+/* ---------- SVG helpers ---------- */
+const D=Math.PI/180;
+function starPath(x,y,R){let p=[];for(let i=0;i<10;i++){const r=i%2?R*.45:R,a=(-90+i*36)*D;p.push((x+r*Math.cos(a)).toFixed(1)+','+(y+r*Math.sin(a)).toFixed(1))}return `<polygon class="st" points="${p.join(' ')}"/>`}
+const svg=(vb,inner,label)=>`<svg class="fig" viewBox="${vb}" role="img" aria-label="${label||'図'}">${inner}</svg>`;
+const ground=(w,y)=>`<path class="gnd" d="M0 ${y} Q ${w*.18} ${y-16} ${w*.35} ${y-4} T ${w*.7} ${y-8} T ${w} ${y-2} V ${y+30} H0Z"/>`;
 
-function svg(k,labels){
-  const c=D[k],S=c.stars,map=(v)=>10+v*0.8;
-  let s='<svg viewBox="0 0 100 100" role="img" aria-label="星の並びの図">';
-  for(const [a,b] of c.lines){const A=S[a],B=S[b];s+=`<line x1="${map(A[0])}" y1="${map(A[1])}" x2="${map(B[0])}" y2="${map(B[1])}" stroke="var(--line)" stroke-width=".7" stroke-linecap="round"/>`;}
-  for(const id in S){const [x,y,m]=S[id],r=MAGR[m]*0.6,fill=m===1?'var(--star)':'var(--star-dim)';
-    if(m===1&&!labels) s+=`<circle cx="${map(x)}" cy="${map(y)}" r="${r*2}" fill="var(--star)" opacity=".15"/>`;
-    s+=`<circle cx="${map(x)}" cy="${map(y)}" r="${r}" fill="${fill}"/>`;}
-  if(labels){for(const id in labels){const [x,y]=S[id];let lx=map(x)+6,ly=map(y)-5;if(lx>90)lx=map(x)-6;if(ly<7)ly=map(y)+8;
-    s+=`<circle cx="${map(x)}" cy="${map(y)}" r="5.2" fill="none" stroke="var(--label)" stroke-width=".6"/><text x="${lx}" y="${ly}" font-size="7" font-weight="700" fill="var(--label)" text-anchor="middle" dominant-baseline="middle" font-family="Zen Kaku Gothic New,sans-serif">${labels[id]}</text>`;}}
-  return s+'</svg>';
-}
-
-let qs=[];
-function card(grid,{no,art,prompt,opts,ans,exp,four}){
-  const el=document.createElement('div');el.className='card';
-  const i=qs.length;qs.push({done:false,ok:false});
-  el.innerHTML=`<div class="qno">${no}</div>${art||''}<p class="prompt">${prompt}</p><div class="choices${four?' four':''}"></div><p class="fb" hidden></p>`;
-  const box=el.querySelector('.choices'),fb=el.querySelector('.fb');
-  opts.forEach((o,j)=>{const b=document.createElement('button');b.type='button';b.id=`q${i}o${j}`;b.textContent=o;
-    b.addEventListener('click',()=>{if(qs[i].done)return;qs[i].done=true;qs[i].ok=o===ans;
-      box.querySelectorAll('button').forEach(x=>{x.disabled=true;if(x.textContent===ans)x.classList.add('ok');});
-      if(o!==ans)b.classList.add('ng');
-      fb.innerHTML=`<strong class="${o===ans?'ok':'ng'}">${o===ans?'正解！':'ざんねん。答えは「'+ans+'」'}</strong>${exp}`;fb.hidden=false;upd();});
-    box.appendChild(b);});
-  grid.appendChild(el);
-}
-function upd(){const a=qs.filter(q=>q.done).length,o=qs.filter(q=>q.ok).length;
-  document.getElementById('ans').textContent=a;document.getElementById('ok').textContent=o;document.getElementById('total').textContent=qs.length;}
-
-function build(){
-  qs=[];['g1','g2','g3','g4'].forEach(g=>document.getElementById(g).innerHTML='');
-  const g1=document.getElementById('g1'),g2=document.getElementById('g2'),g3=document.getElementById('g3'),g4=document.getElementById('g4');
-  let n3=0;
-  ORDER.forEach((k,i)=>{const c=D[k];
-    card(g1,{no:`形 ${i+1}`,art:svg(k),prompt:'この星座は？',opts:rot(c.shapeOpts,i*3%4),ans:c.name,exp:c.shapeExp});
-    if(!NO_NP.includes(k)) card(g2,{no:`名前 ${i+1}`,art:svg(k),prompt:c.namePrompt||`${c.name}の一等星の名前は？`,opts:rot(c.nameOpts,(i*5+1)%4),ans:c.nameAns,exp:c.nameExp});
-    if(!NO_NP.includes(k)) c.pos.forEach(p=>{n3++;const opts=Object.values(p.labels).sort((a,b)=>'アイウエ'.indexOf(a)-'アイウエ'.indexOf(b));
-      card(g3,{no:`位置 ${n3}`,art:svg(k,p.labels),prompt:`${c.name}：${p.q}`,opts,ans:p.ans,exp:p.exp,four:opts.length===4});});
-    card(g4,{no:`季節 ${i+1}`,art:svg(k),prompt:`${c.name}が夜空で見ごろになる季節は？`,opts:SEASONS,ans:c.season,exp:c.seasonExp,four:true});
+const KANA=['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ'];
+function southArc({labels={},star=null}={}){
+  const cx=200,cy=200,r=160;let s='';
+  s+=`<path class="dash" d="M${cx-r} ${cy} A${r} ${r} 0 0 1 ${cx+r} ${cy}" style="stroke-dasharray:none;stroke:var(--line)"/>`;
+  KANA.forEach((k,i)=>{const a=(90+15*(5-i))*D,x=cx+r*Math.cos(a),y=cy-r*Math.sin(a);
+    s+=`<line class="dash" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+    s+=`<circle class="pt" cx="${x}" cy="${y}" r="4"/>`;
+    const lx=cx+(r+16)*Math.cos(a),ly=cy-(r+16)*Math.sin(a);
+    s+=`<text x="${lx}" y="${ly+4}" text-anchor="middle" class="${star===k?'hl':''}">${k}</text>`;
+    if(labels[k]){const tx=cx+(r-26)*Math.cos(a),ty=cy-(r-26)*Math.sin(a);s+=`<text class="sm" x="${tx}" y="${ty+4}" text-anchor="middle">${labels[k]}</text>`}
+    if(star===k)s+=starPath(x,y,11);
   });
-  upd();
+  s+=`<text class="sm" x="${cx-20}" y="${cy-120}" text-anchor="middle">15°</text>`;
+  s+=ground(400,cy);
+  s+=`<text x="${cx-r}" y="${cy+22}" text-anchor="middle">東</text><text x="${cx+r}" y="${cy+22}" text-anchor="middle">西</text><text x="${cx}" y="${cy+22}" text-anchor="middle">南</text>`;
+  return svg('0 0 400 232',s,'南の空の星の位置 ア〜サ');
 }
-document.getElementById('tb').innerHTML=ORDER.map(k=>{const c=D[k];return `<tr><td>${c.name}</td><td>${c.firstName||c.nameAns}</td><td class="mag">${c.mag}</td><td>${c.posText}</td><td>${c.season}</td></tr>`;}).join('');
-document.getElementById('reset').addEventListener('click',()=>{build();window.scrollTo({top:0,behavior:'smooth'});});
-build();
+const MARU='①②③④⑤⑥⑦⑧⑨⑩⑪⑫'.split('');
+function northDial({labels={},star=null}={}){
+  const cx=160,cy=145,r=110;let s='';
+  s+=`<circle class="dash" cx="${cx}" cy="${cy}" r="${r}"/>`;
+  for(let i=1;i<=12;i++){const a=(90+30*(i-1))*D,x=cx+r*Math.cos(a),y=cy-r*Math.sin(a);
+    s+=`<line class="dash" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+    s+=`<circle class="pt" cx="${x}" cy="${y}" r="3.5"/>`;
+    const lx=cx+(r+17)*Math.cos(a),ly=cy-(r+17)*Math.sin(a);
+    s+=`<text x="${lx}" y="${ly+5}" text-anchor="middle" class="${star===i?'hl':''}">${MARU[i-1]}</text>`;
+    if(labels[i]){const tx=cx+(r-24)*Math.cos(a),ty=cy-(r-24)*Math.sin(a);s+=`<text class="sm" x="${tx}" y="${ty+4}" text-anchor="middle">${labels[i]}</text>`}
+    if(star===i)s+=starPath(x,y,10);
+  }
+  s+=`<circle class="dot" cx="${cx}" cy="${cy}" r="4"/><text class="sm" x="${cx+8}" y="${cy+18}">北極星</text>`;
+  s+=ground(320,282)+`<text x="${cx}" y="300" text-anchor="middle">北</text>`;
+  return svg('0 0 320 308',s,'北の空の星の位置 ①〜⑫');
+}
+function cassFinder(show){
+  const apex=[150,30],p3=[150,74],A=p3[1]-apex[1];
+  const p1=[70,104],p5=[235,112];
+  const mid=(p,t)=>[apex[0]+(p[0]-apex[0])*t,apex[1]+(p[1]-apex[1])*t];
+  const p2=mid(p1,.55),p4=mid(p5,.5),pol=[150,74+5*A];
+  let s='';
+  s+=`<line class="dash" x1="${p2[0]}" y1="${p2[1]}" x2="${apex[0]}" y2="${apex[1]}"/><line class="dash" x1="${p4[0]}" y1="${p4[1]}" x2="${apex[0]}" y2="${apex[1]}"/>`;
+  s+=`<polyline class="ln" points="${[p1,p2,p3,p4,p5].map(p=>p.join(',')).join(' ')}"/>`;
+  [p1,p2,p3,p4,p5].forEach(p=>s+=`<circle class="dot" cx="${p[0]}" cy="${p[1]}" r="4.5"/>`);
+  s+=`<line class="ln" x1="${p3[0]}" y1="${p3[1]}" x2="${pol[0]}" y2="${pol[1]}" style="stroke-width:1"/>`;
+  s+=`<path class="gl" d="M${apex[0]+2} ${apex[1]} Q ${apex[0]+16} ${(apex[1]+p3[1])/2} ${p3[0]+2} ${p3[1]}"/><text class="hl" x="${apex[0]+22}" y="${(apex[1]+p3[1])/2+4}">A</text>`;
+  s+=`<path class="gd" d="M${p3[0]+2} ${p3[1]} Q ${p3[0]+40} ${(p3[1]+pol[1])/2} ${pol[0]+2} ${pol[1]}"/><text x="${p3[0]+44}" y="${(p3[1]+pol[1])/2+4}" class="${show?'hl':''}">B${show?' ＝ Aの5倍':' ＝ ？'}</text>`;
+  s+=starPath(pol[0],pol[1],9)+`<text x="${pol[0]-16}" y="${pol[1]+4}" text-anchor="end">北極星</text>`;
+  s+=`<text class="sm" x="${p1[0]-6}" y="${p1[1]-12}" text-anchor="middle">カシオペヤ座</text>`;
+  return svg('0 0 300 320',s,'カシオペヤ座から北極星をさがす図');
+}
+function dipperFinder(show){
+  const b3=[70,300],b4=[80,255],v=[b4[0]-b3[0],b4[1]-b3[1]],pol=[b4[0]+5*v[0],b4[1]+5*v[1]];
+  const b1=[150,262],b2=[142,306],h1=[192,250],h2=[228,262],h3=[268,296];
+  let s='';
+  s+=`<polyline class="ln" points="${[b4,b1,b2,b3,b4].map(p=>p.join(',')).join(' ')}"/><polyline class="ln" points="${[b1,h1,h2,h3].map(p=>p.join(',')).join(' ')}"/>`;
+  [b1,b2,b3,h1,h2,h3].forEach(p=>s+=`<circle class="dot" cx="${p[0]}" cy="${p[1]}" r="4"/>`);
+  s+=starPath(b3[0],b3[1],show?8:5)+starPath(b4[0],b4[1],show?8:5);
+  s+=`<line class="dash" x1="${b4[0]}" y1="${b4[1]}" x2="${pol[0]}" y2="${pol[1]}"/>`;
+  s+=`<text class="hl" x="${b3[0]-18}" y="${(b3[1]+b4[1])/2+4}">A</text>`;
+  s+=`<text x="${(b4[0]+pol[0])/2-18}" y="${(b4[1]+pol[1])/2}" text-anchor="end" class="${show?'hl':''}">B${show?'＝Aの5倍':''}</text>`;
+  s+=starPath(pol[0],pol[1],9)+`<text x="${pol[0]+14}" y="${pol[1]+4}">北極星</text>`;
+  s+=`<text class="sm" x="${h2[0]}" y="${h2[1]+30}" text-anchor="middle">北斗七星</text>`;
+  return svg('0 0 320 330',s,'北斗七星から北極星をさがす図');
+}
+function trails(show){
+  const cx=250,cy=205;let s='';
+  [55,78,96,118,140].forEach((r,i)=>{const a0=(118+i*3)*D,a1=(158+i*3)*D;
+    const x0=cx+r*Math.cos(a0),y0=cy-r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1);
+    s+=`<path class="ln" d="M${x0} ${y0} A${r} ${r} 0 0 0 ${x1} ${y1}"/><circle cx="${x0}" cy="${y0}" r="4" fill="var(--ground)" stroke="var(--ink)" stroke-width="1.5"/><circle class="dot" cx="${x1}" cy="${y1}" r="4"/>`;
+  });
+  s+=`<circle class="dot" cx="${cx}" cy="${cy}" r="3.5"/><text x="${cx-10}" y="${cy+4}" text-anchor="end" class="${show?'hl':''}">${show?'北極星':'星A'}</text>`;
+  s+=`<text class="sm" x="70" y="40">カシオペヤ座の星の線</text><text class="sm" x="70" y="228">○ 撮影開始　● 撮影終了</text>`;
+  return svg('0 0 320 240',s,'長時間撮影した北の空');
+}
+function wAt(x,y,rot){return `<g transform="translate(${x} ${y}) rotate(${rot})"><polyline class="ln" points="-16,-6 -8,6 0,-3 8,6 16,-6"/>${[-16,-8,0,8,16].map((px,i)=>`<circle class="dot" cx="${px}" cy="${[-6,6,-3,6,-6][i]}" r="2.6"/>`).join('')}</g>`}
+function monthFig(show){
+  const cx=160,cy=200,r=130;let s='';
+  const pt=a=>[cx+r*Math.cos(a*D),cy-r*Math.sin(a*D)];
+  const n=pt(50),d=pt(80);
+  s+=`<line class="dash" x1="${cx}" y1="${cy}" x2="${n[0]}" y2="${n[1]}"/><line class="dash" x1="${cx}" y1="${cy}" x2="${d[0]}" y2="${d[1]}"/>`;
+  s+=wAt(n[0],n[1],-40)+wAt(d[0],d[1],-10);
+  s+=`<text class="sm" x="${n[0]+18}" y="${n[1]+20}">11月5日 18時</text><text class="sm" x="${d[0]+22}" y="${d[1]}">12月5日 18時</text>`;
+  const r2=50,a=pt(50),q=[cx+r2*Math.cos(50*D),cy-r2*Math.sin(50*D)],w=[cx+r2*Math.cos(80*D),cy-r2*Math.sin(80*D)];
+  s+=`<path class="gl" d="M${q[0]} ${q[1]} A${r2} ${r2} 0 0 0 ${w[0]} ${w[1]}"/><text class="hl" x="${cx+38}" y="${cy-56}">${show?'30°':'？°'}</text>`;
+  s+=`<circle class="dot" cx="${cx}" cy="${cy}" r="4"/><text class="sm" x="${cx-10}" y="${cy+4}" text-anchor="end">北極星</text>`;
+  s+=ground(320,245)+`<text x="${cx}" y="268" text-anchor="middle">北</text>`;
+  return svg('0 0 320 276',s,'1か月ごとのカシオペヤ座の位置');
+}
+function seasonPaths(){
+  let s='';const y=200;
+  const arc=(x0,peak,x1,label,ly)=>`<path class="ln" d="M${x0} ${y} Q 200 ${2*peak-y} ${x1} ${y}"/><text class="sm" x="200" y="${ly}" text-anchor="middle">${label}</text>`;
+  s+=arc(40,28,360,'はくちょう座：北寄りからのぼり、頭の上付近',22);
+  s+=arc(20,100,380,'オリオン座：真東→南の空→真西',94);
+  s+=arc(110,168,290,'さそり座：南寄り、低い所',160);
+  s+=ground(400,y)+`<text x="20" y="${y+24}">東</text><text x="200" y="${y+24}" text-anchor="middle">南</text><text x="380" y="${y+24}" text-anchor="end">西</text>`;
+  return svg('0 0 400 232',s,'季節の星座の通り道');
+}
+function dirFig(facing){
+  const cx=150,cy=125;let s='';
+  const arrows=[['ア',-135],['イ',-45],['ウ',135],['エ',45]];
+  s+=`<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--mute)"/></marker></defs>`;
+  arrows.forEach(([k,a])=>{const x=cx+70*Math.cos(a*D),y=cy+70*Math.sin(a*D);
+    s+=`<line class="ln" x1="${cx+16*Math.cos(a*D)}" y1="${cy+16*Math.sin(a*D)}" x2="${x}" y2="${y}" marker-end="url(#ah)"/><text x="${cx+88*Math.cos(a*D)}" y="${cy+88*Math.sin(a*D)+5}" text-anchor="middle">${k}</text>`;});
+  s+=starPath(cx,cy,11);
+  s+=`<path class="gnd" d="M0 222 H40 V206 H70 V214 H110 V198 H130 V214 H180 V202 H215 V210 H260 V196 H300 V250 H0Z"/>`;
+  const [L,R]=facing==='東'?['北','南']:['南','北'];
+  s+=`<text class="sm" x="12" y="244">← ${L}</text><text class="sm" x="288" y="244" text-anchor="end">${R} →</text><text x="${cx}" y="244" text-anchor="middle">${facing}</text>`;
+  return svg('0 0 300 252',s,facing+'の空の星');
+}
+
+/* ---------- 問題 ---------- */
+const CATS={find:['北極星をさがす','見つけ方・星座'],day:['1日の動き','1時間に何度？'],month:['1か月の動き','同じ時刻で比べる'],season:['季節の星座','通り道と向き']};
+const DAYL={ア:'19時',イ:'20時',ウ:'21時'};
+const NL={1:'20時',2:'22時',3:'0時'};
+const Q=[
+ {c:'find',t:'choice',q:'北極星が、方角を知る手がかりとして役立つのはなぜですか。',a:'いつもほぼ真北にあり、時間がたってもほとんど動かないから',o:['夜空でいちばん明るい星だから','いつも真南の空の高い所にあるから','季節ごとに見える方角が変わるから'],e:'北極星は北の空の星が回る動きの中心にあるので、位置がほとんど変わりません。北極星の方向がほぼ真北です。'},
+ {c:'find',t:'choice',q:'北極星は何等星ですか。',a:'2等星',o:['1等星','3等星','4等星'],e:'北極星は2等星で、まわりにも星がたくさんあります。手がかりがないと見つけにくいので、北斗七星やカシオペヤ座を使ってさがします。'},
+ {c:'find',t:'choice',q:'北極星がふくまれている星座はどれですか。',a:'こぐま座',o:['おおぐま座','カシオペヤ座','オリオン座'],e:'北極星は、こぐま座のしっぽの先にある星です。'},
+ {c:'find',t:'choice',q:'おおぐま座の中の、ひしゃくの形をした7つの星を何といいますか。',a:'北斗七星',o:['夏の大三角','冬の大三角','すばる'],e:'ひしゃくは水をくむ道具で、水を入れる部分に細長い柄がついた形です。この形の7つの星を北斗七星といいます。'},
+ {c:'find',t:'choice',q:'カシオペヤ座は、アルファベットの何の形をしていますか。',a:'W',o:['V','L','T'],k:1,e:'カシオペヤ座はWの形です。見る時刻によってはMのように見えることもあります。'},
+ {c:'find',t:'num',q:'図はカシオペヤ座を使って北極星をさがす方法です。Aの長さを1とすると、Bの長さはいくつですか。',a:5,u:'',fig:cassFinder,e:'両はしの2辺をのばして交わった点と、まん中の星を結んだ長さがAです。これを5倍のばした所に北極星があります。'},
+ {c:'find',t:'choice',q:'北斗七星を使って北極星をさがすとき、どの星を使いますか。',a:'ひしゃくの水を入れる部分の、先にある2つの星',o:['柄の先にある2つの星','柄と水を入れる部分のつなぎ目の2つの星','7つの星のまん中にある1つの星'],fig:dipperFinder,e:'水を入れる部分の先の2つの星（図のA）を結び、くみ口の方へのばします。'},
+ {c:'find',t:'num',q:'北斗七星のひしゃくの先の2つの星の間（A）を、何倍のばした所に北極星がありますか。',a:5,u:'倍',fig:dipperFinder,e:'カシオペヤ座と同じく、5倍です。北斗七星とカシオペヤ座は北極星をはさんで反対側にあります。'},
+ {c:'find',t:'choice',q:'北の空を長い時間撮影すると、カシオペヤ座の星は線のように写りましたが、星Aだけは1点に写りました。星Aは何という星ですか。',a:'北極星',o:['シリウス','アンタレス','ベガ'],fig:trails,e:'カシオペヤ座の線は、星Aを中心にした円の一部になっています。動きの中心でほとんど動かない星は北極星です。'},
+ {c:'find',t:'choice',q:'こぐま座・おおぐま座・カシオペヤ座は、日本では主にどの空に見えますか。',a:'北の空',o:['東の空','西の空','南の空'],k:1,e:'どれも北極星の近くにある星座なので、北の空に見えます。'},
+
+ {c:'day',t:'num',q:'南の空の星Aは、19時にア、20時にイ、21時にウの位置にありました。ア〜サの間の角度はすべて15°です。星Aは1時間で何度動きますか。',a:15,u:'度',fig:()=>southArc({labels:DAYL}),e:'1時間に1つずつ動いているので15°です。星は1時間に約15°動いて見えます。'},
+ {c:'day',t:'choice',q:'星Aがアの位置にあるとき（19時）から4時間後、星Aはどの位置にありますか。',a:'オ',o:['エ','オ','カ','キ'],k:1,fig:s=>southArc({labels:DAYL,star:s?'オ':null}),e:'1時間に1つずつ進みます。ア→イ→ウ→エ→オで、4時間後はオです。'},
+ {c:'day',t:'choice',q:'11月1日19時にアにあった星Aは、11月2日の2時にはどの位置にありますか。',a:'ク',o:['キ','ク','ケ','コ'],k:1,fig:s=>southArc({labels:DAYL,star:s?'ク':null}),e:'19時から次の日の2時までは7時間です。アから7つ進むとクになります。'},
+ {c:'day',t:'num',q:'星Aが図のコの位置にあるのは、11月2日の何時ですか。24時制で答えましょう。',a:4,u:'時',fig:s=>southArc({labels:DAYL,star:s?'コ':null}),e:'アからコまでは9つなので9時間後です。19＋9＝28時、24を引いて次の日の4時です。'},
+ {c:'day',t:'choice',q:'南の空の星は、時間とともにどのように動いて見えますか。',a:'東から南の空の高い所を通って西へ',o:['西から南の空の高い所を通って東へ','南から北へまっすぐ','ほとんど動かない'],e:'南の空の星は、太陽と同じように東から西へ動いて見えます。'},
+ {c:'day',t:'choice',q:'北の空の星は、北極星を中心にしてどちら向きに回って見えますか。',a:'反時計回り',o:['時計回り'],k:1,fig:()=>northDial({labels:NL,star:3}),e:'①（20時）→②（22時）→③（0時）と、時計の針と反対向きに回ります。'},
+ {c:'day',t:'num',q:'12月8日20時に①、22時に②、12月9日0時に③の位置に星Aがありました。①〜⑫の間はすべて30°です。星Aは2時間で何度動きましたか。',a:30,u:'度',fig:()=>northDial({labels:NL,star:3}),e:'2時間で1つ（30°）動きます。1時間にすると15°で、南の空の星と同じ速さです。'},
+ {c:'day',t:'choice',q:'星Aは、12月9日の2時にはどの位置にありますか。',a:'④',o:['③','④','⑤','⑫'],k:1,fig:s=>northDial({labels:NL,star:s?4:3}),e:'0時の③から2時間で1つ進むので④です。'},
+ {c:'day',t:'num',q:'12月8日のある時刻に、星Aは⑨の位置にありました。何時ですか。24時制で答えましょう。',a:12,u:'時',fig:s=>northDial({labels:NL,star:s?9:1}),e:'⑨は①（20時）から時計回りに4つもどった所です。2時間×4＝8時間前なので、20－8＝12時です。'},
+ {c:'day',t:'num',q:'星は1日（24時間）で、北極星のまわりを約何度回りますか。',a:360,u:'度',e:'15°×24時間＝360°。1日でほぼ1周します。'},
+
+ {c:'month',t:'num',q:'毎月5日の18時に北の空を観察しました。11月5日から12月5日の間に、カシオペヤ座は北極星を中心に何度動きましたか。',a:30,u:'度',fig:monthFig,e:'同じ時刻に観察すると、星は1か月に約30°ずつ動いて見えます。'},
+ {c:'month',t:'choice',q:'同じ時刻に観察すると、北の空の星は1か月ごとにどちら向きに動いて見えますか。',a:'反時計回り',o:['時計回り'],k:1,fig:monthFig,e:'1日の動きと同じく、北極星を中心に反時計回りです。'},
+ {c:'month',t:'choice',q:'11月5日18時の位置から、北極星を中心に180°回った位置にカシオペヤ座が見えるのは、いつの18時ですか。',a:'5月5日',o:['2月5日','8月5日','12月5日'],e:'1か月で30°なので、180°÷30°＝6か月。11月5日の6か月後は5月5日です。'},
+ {c:'month',t:'choice',q:'星が同じ位置に見える時刻は、1か月でどう変わりますか。',a:'約2時間早くなる',o:['約2時間おそくなる','約1時間早くなる','変わらない'],e:'1か月で30°先に進んでいます。30°は2時間分（15°×2）なので、2時間早い時刻に同じ位置に見えます。'},
+ {c:'month',t:'num',q:'同じ時刻に観察すると、星は1年（12か月）で約何度回りますか。',a:360,u:'度',e:'30°×12か月＝360°。1年たつと、同じ時刻に同じ位置にもどります。'},
+
+ {c:'season',t:'choice',q:'「はくちょう座」の星の通り道はどれですか。',a:'真東よりも北寄りからのぼり、頭の上付近を通る',o:['真東よりも南寄りからのぼり、南の空の低い所を通る','秋分の日の太陽とほぼ同じ通り道を通る','西からのぼり、東にしずむ'],after:seasonPaths,e:'はくちょう座（夏の星座）は北寄りからのぼり、高く頭の上付近を通ります。'},
+ {c:'season',t:'choice',q:'「さそり座」の星の通り道はどれですか。',a:'真東よりも南寄りからのぼり、南の空の低い所を通る',o:['真東よりも北寄りからのぼり、頭の上付近を通る','秋分の日の太陽とほぼ同じ通り道を通る','北極星のまわりを回り、しずまない'],after:seasonPaths,e:'さそり座は南寄りからのぼり、南の空の低い所を通ります。'},
+ {c:'season',t:'choice',q:'「オリオン座」の星の通り道はどれですか。',a:'秋分の日の太陽とほぼ同じ通り道を通る',o:['真東よりも北寄りからのぼり、頭の上付近を通る','真東よりも南寄りからのぼり、南の空の低い所を通る','北の空でしずまずに回る'],after:seasonPaths,e:'オリオン座はほぼ真東からのぼり、南の空を通ってほぼ真西にしずみます。秋分の日の太陽の通り道とほぼ同じです。'},
+ {c:'season',t:'choice',q:'東の空の低い所にオリオン座の星が見えました。この星は、このあとどの向きに動いて見えますか。',a:'イ',o:['ア','イ','ウ','エ'],k:1,fig:()=>dirFig('東'),e:'東からのぼった星は南の空へ向かいます。東を向いたとき南は右なので、右ななめ上（イ）に動きます。'},
+ {c:'season',t:'choice',q:'西の空の低い所に見えた星は、このあとどの向きに動いて見えますか。',a:'エ',o:['ア','イ','ウ','エ'],k:1,fig:()=>dirFig('西'),e:'南の空を通ってきた星は、西を向いたとき左（南）から来て、右ななめ下（エ）へしずんでいきます。'},
+];
+Q.forEach((q,i)=>q.id=i);
+
+/* ---------- 状態 ---------- */
+const app=document.getElementById('app');
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let S={cats:new Set(Object.keys(CATS)),n:10,list:[],i:0,res:[],done:false,view:'start'};
+
+function render(){({start:renderStart,quiz:renderQ,result:renderResult})[S.view]()}
+
+function renderStart(){
+  const best=store.get('hoshi-best');
+  app.innerHTML=`<section class="card">
+    <h2>${rb('どの問題をとく？')}</h2>
+    <p class="lead">${rb('プリント「夜空を動く星」の内容から出題します。分野をえらんでスタート。')}</p>
+    <div class="cats">${Object.entries(CATS).map(([k,[n,s]])=>`<div class="cat"><input type="checkbox" id="c-${k}" value="${k}" ${S.cats.has(k)?'checked':''}><label for="c-${k}"><b>${rb(n)}</b><span>${rb(s)}・${Q.filter(q=>q.c===k).length}問</span></label></div>`).join('')}</div>
+    <div class="row"><span style="font-size:14px">問題数</span><div class="seg">${[5,10,0].map(n=>`<input type="radio" name="n" id="n${n}" value="${n}" ${S.n===n?'checked':''}><label for="n${n}">${n?n+'問':'ぜんぶ'}</label>`).join('')}</div></div>
+    <div class="row" style="justify-content:space-between"><button class="btn" id="go">スタート</button>${best?`<span class="best">さいこう記録 ${best.s} / ${best.t}</span>`:''}</div>
+  </section>`;
+  app.querySelectorAll('.cat input').forEach(el=>el.onchange=()=>{el.checked?S.cats.add(el.value):S.cats.delete(el.value)});
+  app.querySelectorAll('input[name=n]').forEach(el=>el.onchange=()=>S.n=+el.value);
+  document.getElementById('go').onclick=()=>{
+    let pool=Q.filter(q=>S.cats.has(q.c));
+    if(!pool.length){S.cats=new Set(Object.keys(CATS));pool=Q.slice()}
+    pool=shuffle(pool.slice());if(S.n)pool=pool.slice(0,S.n);
+    start(pool);
+  };
+}
+function start(list){S.list=list;S.i=0;S.res=[];S.view='quiz';render();window.scrollTo(0,0)}
+
+function renderQ(){
+  const q=S.list[S.i];S.done=false;
+  const opts=q.t==='choice'?(q.k?[...q.o.includes(q.a)?q.o:[q.a,...q.o]]:shuffle([q.a,...q.o])):null;
+  const grid=opts&&opts.every(o=>o.length<=2);
+  const dots=S.list.map((_,i)=>`<i class="${S.res[i]===true?'ok':S.res[i]===false?'ng':''} ${i===S.i?'now':''}"></i>`).join('');
+  app.innerHTML=`<section class="card">
+    <div class="top"><span>${S.i+1} / ${S.list.length}</span><div class="dots">${dots}</div></div>
+    <span class="tag">${rb(CATS[q.c][0])}</span>
+    <p class="q">${rb(q.q)}</p>
+    ${q.fig?`<div class="figbox" id="fig">${q.fig(false)}</div>`:''}
+    ${opts?`<div class="opts ${grid?'grid4':''}">${opts.map(o=>`<button class="opt" data-v="${o}">${rb(o)}</button>`).join('')}</div>`
+      :`<form class="num" id="nf"><input id="numIn" inputmode="numeric" autocomplete="off" aria-label="答え"><span class="unit">${q.u}</span><button class="btn" type="submit">答える</button></form>`}
+    <div id="fb"></div>
+  </section>`;
+  if(opts)app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b.dataset.v,b));
+  else{const f=document.getElementById('nf'),inp=document.getElementById('numIn');inp.focus({preventScroll:true});
+    f.onsubmit=e=>{e.preventDefault();const v=inp.value.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).replace(/[^\d.\-]/g,'');if(v==='')return;answer(Number(v),inp)}}
+}
+function answer(v,el){
+  if(S.done)return;S.done=true;S.pick=v;
+  const q=S.list[S.i],ok=q.t==='choice'?v===q.a:v===q.a;
+  S.res[S.i]=ok;
+  if(q.t==='choice')app.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.dataset.v===q.a)b.classList.add('ok');else if(b===el)b.classList.add('ng')});
+  else{el.disabled=true;el.style.borderColor=ok?'var(--ok)':'var(--ng)';el.parentElement.querySelector('button').disabled=true}
+  const fig=document.getElementById('fig');if(fig&&q.fig)fig.innerHTML=q.fig(true);
+  const last=S.i===S.list.length-1;
+  document.getElementById('fb').innerHTML=`<div class="fb ${ok?'ok':'ng'}"><span class="v">${ok?'正解！':'おしい！ 正解は「'+rb(q.a)+(q.u||'')+'」'}</span><p>${rb(q.e)}</p></div>
+    ${q.after?`<div class="figbox" style="margin-top:12px">${q.after()}</div>`:''}
+    <div class="row" style="margin-top:14px"><button class="btn" id="next">${last?'結果を見る':'次の問題'}</button></div>`;
+  const n=document.getElementById('next');n.focus({preventScroll:true});
+  n.onclick=()=>{if(last){S.view='result';render()}else{S.i++;render()}window.scrollTo({top:0})};
+}
+function renderResult(){
+  const t=S.list.length,s=S.res.filter(Boolean).length;
+  const best=store.get('hoshi-best');if(!best||s/t>best.s/best.t||(s/t===best.s/best.t&&t>best.t))store.set('hoshi-best',{s,t});
+  const miss=S.list.filter((_,i)=>!S.res[i]);
+  const msg=s===t?'全問正解！ 夜空の名人です。':s/t>=.7?'よくできました。まちがえた所を見直そう。':'図をよく見て、もう一度ちょうせんしよう。';
+  const star=on=>`<svg viewBox="0 0 24 24"><polygon points="12,1.5 14.9,8.6 22.5,9.2 16.7,14.2 18.5,21.6 12,17.6 5.5,21.6 7.3,14.2 1.5,9.2 9.1,8.6" fill="${on?'var(--gold)':'none'}" stroke="var(--gold)" stroke-width="1.3"/></svg>`;
+  app.innerHTML=`<section class="card">
+    <h2>けっか</h2>
+    <p class="score">${s}<small> / ${t}</small></p>
+    <div class="stars">${S.res.map(star).join('')}</div>
+    <p class="lead" style="color:var(--ink)">${rb(msg)}</p>
+    ${miss.length?`<h2 style="font-size:16px">${rb('まちがえた問題')}</h2><ul class="miss">${miss.map(q=>`<li>${rb(q.q)}<br>正解：<b>${rb(q.a)}${q.u||''}</b></li>`).join('')}</ul>`:''}
+    <div class="row">${miss.length?`<button class="btn" id="retry">まちがえた問題だけもう一度</button>`:''}<button class="btn ${miss.length?'sub':''}" id="home">はじめにもどる</button></div>
+  </section>`;
+  if(miss.length)document.getElementById('retry').onclick=()=>start(shuffle(miss.slice()));
+  document.getElementById('home').onclick=()=>{S.view='start';render()};
+}
+
+/* ふりがな切りかえ（回答中は状態を保つ） */
+const furiEl=document.getElementById('furi');
+furi=store.get('hoshi-furi')!==false;furiEl.checked=furi;
+furiEl.onchange=()=>{furi=furiEl.checked;store.set('hoshi-furi',furi);
+  if(S.view==='quiz'&&S.done){const v=S.pick,q=S.list[S.i];renderQ();
+    if(q.t==='choice'){answer(v,[...app.querySelectorAll('.opt')].find(b=>b.dataset.v===v))}
+    else{const inp=document.getElementById('numIn');inp.value=v;answer(v,inp)}}
+  else render()};
+
+/* 星空の背景 */
+function sky(){const c=document.getElementById('sky'),d=window.devicePixelRatio||1,w=innerWidth,h=innerHeight;c.width=w*d;c.height=h*d;const x=c.getContext('2d');x.scale(d,d);
+  const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#0b1229');g.addColorStop(1,'#18245a');x.fillStyle=g;x.fillRect(0,0,w,h);
+  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<w*h/2600;i++){const r=rnd()*1.2+.2;x.globalAlpha=rnd()*.6+.2;x.fillStyle=rnd()>.9?'#f5d98a':'#dfe4ff';x.beginPath();x.arc(rnd()*w,rnd()*h,r,0,7);x.fill()}}
+sky();addEventListener('resize',sky);
+render();
 </script>
 
 </body></html>
