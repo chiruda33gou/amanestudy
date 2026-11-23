@@ -1,376 +1,238 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>夜空を動く星ドリル</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>利根川クイズ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* Layout: 星座早見盤のような濃紺の夜空に、1枚の問題カードが浮かぶ一列レイアウト。図は自前のSVG。 */
-:root{
-  --sky:#0e1631; --sky2:#162150; --panel:#1a2655; --panel2:#22306a;
-  --ink:#eef0fa; --mute:#a6aed4; --line:#5d6cab;
-  --gold:#f5c95b; --gold-ink:#2a1e00;
-  --ok:#7fdcb7; --ng:#ff9a9a; --ground:#0a1026;
-  --display:"Kiwi Maru","Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
-  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;
-  color-scheme:dark;
-}
-*{box-sizing:border-box}
-html,body{min-height:100%}
-body{background:var(--sky);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
-#sky{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
-.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--mute)}
-h1{font-family:var(--display);font-weight:500;font-size:clamp(26px,6vw,36px);line-height:1.25;margin:2px 0 0;text-wrap:balance}
-h1 .g{color:var(--gold)}
-.toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);cursor:pointer;user-select:none}
-.toggle input{accent-color:var(--gold);width:18px;height:18px}
-ruby rt{font-size:.5em;color:var(--mute);font-weight:400}
-.card{background:linear-gradient(180deg,var(--panel),var(--sky2));border:1px solid var(--line);border-radius:18px;padding:22px clamp(16px,4vw,28px);display:flex;flex-direction:column;gap:16px}
-h2{font-family:var(--display);font-weight:500;font-size:19px;margin:0}
-.lead{margin:0;color:var(--mute);font-size:14px}
-.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-.cat{position:relative}
-.cat input{position:absolute;opacity:0;inset:0}
-.cat label{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;min-height:72px;transition:border-color .15s,background .15s}
-.cat label b{font-weight:700}
-.cat label span{font-size:12px;color:var(--mute)}
-.cat input:checked+label{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
-.cat input:focus-visible+label{outline:2px solid var(--gold);outline-offset:2px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.seg{display:flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
-.seg input{position:absolute;opacity:0;width:0;height:0}
-.seg label{padding:6px 16px;cursor:pointer;font-size:14px}
-.seg input:checked+label{background:var(--gold);color:var(--gold-ink);font-weight:700}
-.seg input:focus-visible+label{outline:2px solid var(--ink);outline-offset:-3px}
-button{font:inherit;cursor:pointer}
-.btn{background:var(--gold);color:var(--gold-ink);border:0;border-radius:999px;padding:12px 26px;font-weight:700;font-size:16px}
-.btn:hover{filter:brightness(1.07)}
-.btn.sub{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
-.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
-.best{font-size:13px;color:var(--mute)}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
-.dots{display:flex;gap:4px;flex-wrap:wrap}
-.dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
-.dots i.ok{background:var(--gold)} .dots i.ng{background:var(--ng)} .dots i.now{outline:2px solid var(--ink);outline-offset:1px}
-.tag{align-self:flex-start;font-size:12px;letter-spacing:.06em;padding:2px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
-.q{font-size:18px;font-weight:500;margin:0;line-height:1.8}
-.note{font-size:13px;color:var(--mute);margin:-6px 0 0}
-.figbox{background:var(--ground);border-radius:12px;padding:10px;overflow-x:auto}
-.fig{width:100%;max-width:440px;height:auto;display:block;margin:0 auto}
-.fig text{fill:var(--ink);font-family:var(--body);font-size:13px}
-.fig .sm{font-size:11px;fill:var(--mute)}
-.fig .hl{fill:var(--gold);font-weight:700}
-.fig .dash{stroke:var(--line);stroke-dasharray:3 4;fill:none;stroke-width:1}
-.fig .ln{stroke:var(--mute);stroke-width:1.6;fill:none}
-.fig .gl{stroke:var(--gold);stroke-width:2;fill:none}
-.fig .gd{stroke:var(--gold);stroke-width:1.6;fill:none;stroke-dasharray:4 4}
-.fig .st{fill:var(--gold)}
-.fig .dot{fill:var(--ink)}
-.fig .pt{fill:var(--mute)}
-.fig .gnd{fill:#26305e}
-.fig .hz{stroke:var(--line);stroke-width:1.5}
-.fig .ring{fill:none;stroke:var(--gold);stroke-width:2}
-.opts{display:grid;gap:10px}
-.opts.grid4{grid-template-columns:repeat(4,1fr)}
-@media (max-width:420px){.opts.grid4{grid-template-columns:repeat(2,1fr)}}
-.opt{text-align:left;background:var(--panel2);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.6}
-.opts.grid4 .opt{text-align:center;font-size:18px}
-.opt:hover:not(:disabled){border-color:var(--gold)}
-.opt:disabled{cursor:default}
-.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--panel2))}
-.opt.ng{border-color:var(--ng);background:color-mix(in srgb,var(--ng) 16%,var(--panel2))}
-.num{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.num input{font:inherit;font-size:22px;width:120px;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);font-variant-numeric:tabular-nums}
-.num input:focus{outline:2px solid var(--gold);border-color:var(--gold)}
-.num .unit{font-size:18px}
-.fb{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:var(--panel2)}
-.fb.ok{border-left:4px solid var(--ok)} .fb.ng{border-left:4px solid var(--ng)}
-.fb .v{font-weight:700;font-size:17px}
-.fb.ok .v{color:var(--ok)} .fb.ng .v{color:var(--ng)}
-.fb p{margin:0;font-size:15px}
-.score{font-family:var(--display);font-size:56px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums;margin:0}
-.score small{font-size:24px;color:var(--mute)}
-.stars{display:flex;gap:6px;flex-wrap:wrap}
-.stars svg{width:24px;height:24px}
-.miss{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-.miss li{background:var(--panel2);border-radius:10px;padding:10px 14px;font-size:14px}
-.miss li b{color:var(--gold)}
-footer{font-size:12px;color:var(--mute);text-align:center}
-@media (prefers-reduced-motion:no-preference){.card{animation:rise .28s ease-out}@keyframes rise{from{transform:translateY(6px)}to{transform:none}}}
+/* VOICE: やさしく元気な、小学生向けの復習ドリル
+   IDEA: 利根川をくだる舟——1問答えるごとに源流から銚子へ進む
+   PICTURE: 越後山脈から太平洋までの川の断面図と、進む舟
+   COLOUR and TYPE: 川の藍 #0f4c81 を主に、水色の帯、キャベツの緑を合図色に。Zen Maru Gothic
+   LAYOUT: 上に川の帯、その下に1列の問題カード。スマホでも大きなボタン */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0b1622);--ink:light-dark(#13233a,#e7eef7);--sub:light-dark(#4d5d72,#a9b8cb);
+--river:light-dark(#0f4c81,#0a2e4f);--water:light-dark(#d9ecfb,#16344f);--line:light-dark(#d4dfeb,#294560);
+--card:light-dark(#f4f8fc,#112539);--ok:light-dark(#2e7d32,#7fd483);--okbg:light-dark(#e6f4e6,#173a1d);
+--ng:light-dark(#c62828,#ff8a80);--ngbg:light-dark(#fdeaea,#40191a);--accent:#6fb33f}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 "Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;overflow-x:clip}
+header{background:var(--river);color:#fff;padding:22px max(5vw,16px) 0}
+header h1{margin:0;font-size:clamp(26px,5vw,40px);line-height:1.15;font-weight:900;text-wrap:balance}
+header p{margin:4px 0 0;opacity:.85;font-size:15px}
+.riv{display:block;width:100%;height:auto;margin-top:10px}
+main{max-width:760px;margin:0 auto;padding:clamp(20px,4vw,40px) max(4vw,14px) 60px}
+h2{font-size:22px;margin:0 0 12px}
+.secs{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.sec{all:unset;cursor:pointer;display:block;border:2px solid var(--line);border-radius:16px;padding:16px 18px;background:var(--card)}
+.sec:focus-visible,.ch:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sec b{display:block;font-size:19px}.sec span{font-size:14px;color:var(--sub)}
+.sec[aria-pressed=true]{border-color:var(--river);background:var(--water)}
+:root[data-theme=dark] .sec[aria-pressed=true]{border-color:#5aa0e0}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center}
+.btn{all:unset;cursor:pointer;min-height:48px;padding:0 22px;display:inline-flex;align-items:center;border-radius:999px;background:var(--river);color:#fff;font-weight:700;font-size:17px}
+:root[data-theme=dark] .btn{background:#2c74b8}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.meta{display:flex;justify-content:space-between;font-size:15px;color:var(--sub);margin-bottom:8px}
+.q{font-size:clamp(19px,3.2vw,23px);font-weight:700;line-height:1.55;margin:4px 0 16px}
+.tag{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--water);color:var(--ink)}
+.chs{display:grid;gap:10px}
+.ch{all:unset;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border:2px solid var(--line);border-radius:14px;background:var(--bg);min-height:24px}
+.ch i{font-style:normal;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--water);font-weight:700;font-size:15px}
+.ch.ok{border-color:var(--ok);background:var(--okbg)}.ch.ng{border-color:var(--ng);background:var(--ngbg)}
+.ch.ok i{background:var(--ok);color:#fff}.ch.ng i{background:var(--ng);color:#fff}
+.lock .ch{cursor:default}
+.fb{margin-top:16px;padding:14px 18px;border-radius:14px;background:var(--card);border-left:6px solid var(--ok)}
+.fb.ng{border-left-color:var(--ng)}.fb b{font-size:19px}
+.fig{margin:0 0 16px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.fig figcaption{font-size:14px;font-weight:700;margin-bottom:6px}
+.fig small{display:block;color:var(--sub);font-size:13px;margin-top:4px}
+.bars{display:grid;gap:8px}.br{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;font-size:13px}
+.st{display:flex;height:30px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.st span{display:grid;place-items:center;white-space:nowrap;overflow:hidden;font-size:12px;border-right:1px solid var(--line);background:var(--bg)}
+.st .a{background:#b9c3cc;color:#13233a}.st .i{background:#4a5563;color:#fff;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:15px}td,th{border:1px solid var(--line);padding:5px 8px;text-align:right}th{background:var(--water)}td:first-child,th:first-child{text-align:center}
+.score{font-size:clamp(48px,12vw,80px);font-weight:900;line-height:1;color:var(--river)}
+:root[data-theme=dark] .score{color:#7cb8ef}
+.wl{padding:0;list-style:none;display:grid;gap:10px}.wl li{padding:12px 16px;border-radius:12px;background:var(--card);font-size:15px}
+.wl b{color:var(--ok)}
+.hide{display:none}
+@media (prefers-reduced-motion:reduce){#boat{transition:none!important}}
 </style>
-
-<canvas id="sky" aria-hidden="true"></canvas>
-<div class="wrap">
-  <header>
-    <div>
-      <div class="eyebrow">第5回 天体の観測</div>
-      <h1>夜空を動く<span class="g">星</span>ドリル</h1>
-    </div>
-    <label class="toggle"><input type="checkbox" id="furi" checked> ふりがな</label>
-  </header>
-  <main id="app"></main>
-  <footer>北極星の見つけ方・星の1日の動き・1か月の動き・季節の星座</footer>
-</div>
-
+</head>
+<body>
+<header>
+<h1>利根川クイズ 〜関東平野をうるおす川〜</h1>
+<p>第6回「特色ある地域の自然とくらし」の復習 ・ ぜんぶ選ぶだけの問題です</p>
+<svg class="riv" viewBox="0 0 800 120" role="img" aria-label="進みぐあい：利根川を源流から銚子までくだる舟">
+<path d="M0 120 L0 40 L40 10 L80 38 L110 18 L150 52 L190 70 L800 78 L800 120Z" fill="#0b3a63"/>
+<path d="M0 120 L0 60 L60 34 L120 62 L800 92 L800 120Z" fill="#6fb33f" opacity=".55"/>
+<path d="M720 120 L720 86 Q760 80 800 84 L800 120Z" fill="#5fa8e8"/>
+<path id="rp" d="M50 30 C100 60 150 80 230 90 S420 100 520 98 S680 96 740 92" fill="none" stroke="#9fd0ff" stroke-width="7" stroke-linecap="round"/>
+<text x="8" y="112" fill="#fff" font-size="13">越後山脈（源流）</text>
+<text x="700" y="114" fill="#fff" font-size="13" text-anchor="end">銚子 → 太平洋</text>
+<g id="boat" style="transition:transform .6s ease"><path d="M-12 -4 L12 -4 L7 4 L-7 4Z" fill="#fff"/><path d="M0 -4 L0 -20 L10 -6Z" fill="#ffd34d"/></g>
+</svg>
+</header>
+<main>
+<section id="home">
+<h2>どこを復習する？</h2>
+<div class="secs" id="secs"></div>
+<div class="row"><button class="btn" id="start">スタート</button><button class="btn ghost hide" id="retryWrong">前にまちがえた問題だけ</button></div>
+<p style="font-size:14px;color:var(--sub)">問題の順番と選択肢の順番は毎回入れかわります。</p>
+</section>
+<section id="quiz" class="hide">
+<div class="meta"><span id="pos"></span><span id="pt"></span></div>
+<span class="tag" id="qsec"></span>
+<p class="q" id="qt"></p>
+<div id="fig"></div>
+<div class="chs" id="chs"></div>
+<div id="fb"></div>
+<div class="row"><button class="btn hide" id="next">つぎへ</button><button class="btn ghost" id="quit">やめる</button></div>
+</section>
+<section id="res" class="hide">
+<h2>けっか</h2>
+<div class="score" id="sc"></div>
+<p id="cm"></p>
+<div class="row"><button class="btn" id="again">もう一度</button><button class="btn ghost" id="wrongOnly">まちがえた問題をやり直す</button><button class="btn ghost" id="home2">はじめにもどる</button></div>
+<h2 style="margin-top:28px" id="wh">まちがえた問題</h2>
+<ul class="wl" id="wl"></ul>
+</section>
+</main>
 <script>
-/* ---------- ふりがな ---------- */
-const RUBY={'反時計回り':'はんとけいまわり','時計回り':'とけいまわり','北斗七星':'ほくとしちせい','北極星':'ほっきょくせい','方角':'ほうがく','星座':'せいざ','等星':'とうせい','観察':'かんさつ','撮影':'さつえい'};
-const RUBY_RE=new RegExp(Object.keys(RUBY).sort((a,b)=>b.length-a.length).join('|'),'g');
-let furi=true;
-const rb=s=>furi?String(s).replace(RUBY_RE,m=>`<ruby>${m}<rt>${RUBY[m]}</rt></ruby>`):String(s);
-
-/* ---------- SVG helpers ---------- */
-const D=Math.PI/180;
-function starPath(x,y,R){let p=[];for(let i=0;i<10;i++){const r=i%2?R*.45:R,a=(-90+i*36)*D;p.push((x+r*Math.cos(a)).toFixed(1)+','+(y+r*Math.sin(a)).toFixed(1))}return `<polygon class="st" points="${p.join(' ')}"/>`}
-const svg=(vb,inner,label)=>`<svg class="fig" viewBox="${vb}" role="img" aria-label="${label||'図'}">${inner}</svg>`;
-const ground=(w,y)=>`<path class="gnd" d="M0 ${y} Q ${w*.18} ${y-16} ${w*.35} ${y-4} T ${w*.7} ${y-8} T ${w} ${y-2} V ${y+30} H0Z"/>`;
-
-const KANA=['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ'];
-function southArc({labels={},star=null}={}){
-  const cx=200,cy=200,r=160;let s='';
-  s+=`<path class="dash" d="M${cx-r} ${cy} A${r} ${r} 0 0 1 ${cx+r} ${cy}" style="stroke-dasharray:none;stroke:var(--line)"/>`;
-  KANA.forEach((k,i)=>{const a=(90+15*(5-i))*D,x=cx+r*Math.cos(a),y=cy-r*Math.sin(a);
-    s+=`<line class="dash" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
-    s+=`<circle class="pt" cx="${x}" cy="${y}" r="4"/>`;
-    const lx=cx+(r+16)*Math.cos(a),ly=cy-(r+16)*Math.sin(a);
-    s+=`<text x="${lx}" y="${ly+4}" text-anchor="middle" class="${star===k?'hl':''}">${k}</text>`;
-    if(labels[k]){const tx=cx+(r-26)*Math.cos(a),ty=cy-(r-26)*Math.sin(a);s+=`<text class="sm" x="${tx}" y="${ty+4}" text-anchor="middle">${labels[k]}</text>`}
-    if(star===k)s+=starPath(x,y,11);
-  });
-  s+=`<text class="sm" x="${cx-20}" y="${cy-120}" text-anchor="middle">15°</text>`;
-  s+=ground(400,cy);
-  s+=`<text x="${cx-r}" y="${cy+22}" text-anchor="middle">東</text><text x="${cx+r}" y="${cy+22}" text-anchor="middle">西</text><text x="${cx}" y="${cy+22}" text-anchor="middle">南</text>`;
-  return svg('0 0 400 232',s,'南の空の星の位置 ア〜サ');
-}
-const MARU='①②③④⑤⑥⑦⑧⑨⑩⑪⑫'.split('');
-function northDial({labels={},star=null}={}){
-  const cx=160,cy=145,r=110;let s='';
-  s+=`<circle class="dash" cx="${cx}" cy="${cy}" r="${r}"/>`;
-  for(let i=1;i<=12;i++){const a=(90+30*(i-1))*D,x=cx+r*Math.cos(a),y=cy-r*Math.sin(a);
-    s+=`<line class="dash" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
-    s+=`<circle class="pt" cx="${x}" cy="${y}" r="3.5"/>`;
-    const lx=cx+(r+17)*Math.cos(a),ly=cy-(r+17)*Math.sin(a);
-    s+=`<text x="${lx}" y="${ly+5}" text-anchor="middle" class="${star===i?'hl':''}">${MARU[i-1]}</text>`;
-    if(labels[i]){const tx=cx+(r-24)*Math.cos(a),ty=cy-(r-24)*Math.sin(a);s+=`<text class="sm" x="${tx}" y="${ty+4}" text-anchor="middle">${labels[i]}</text>`}
-    if(star===i)s+=starPath(x,y,10);
-  }
-  s+=`<circle class="dot" cx="${cx}" cy="${cy}" r="4"/><text class="sm" x="${cx+8}" y="${cy+18}">北極星</text>`;
-  s+=ground(320,282)+`<text x="${cx}" y="300" text-anchor="middle">北</text>`;
-  return svg('0 0 320 308',s,'北の空の星の位置 ①〜⑫');
-}
-function cassFinder(show){
-  const apex=[150,30],p3=[150,74],A=p3[1]-apex[1];
-  const p1=[70,104],p5=[235,112];
-  const mid=(p,t)=>[apex[0]+(p[0]-apex[0])*t,apex[1]+(p[1]-apex[1])*t];
-  const p2=mid(p1,.55),p4=mid(p5,.5),pol=[150,74+5*A];
-  let s='';
-  s+=`<line class="dash" x1="${p2[0]}" y1="${p2[1]}" x2="${apex[0]}" y2="${apex[1]}"/><line class="dash" x1="${p4[0]}" y1="${p4[1]}" x2="${apex[0]}" y2="${apex[1]}"/>`;
-  s+=`<polyline class="ln" points="${[p1,p2,p3,p4,p5].map(p=>p.join(',')).join(' ')}"/>`;
-  [p1,p2,p3,p4,p5].forEach(p=>s+=`<circle class="dot" cx="${p[0]}" cy="${p[1]}" r="4.5"/>`);
-  s+=`<line class="ln" x1="${p3[0]}" y1="${p3[1]}" x2="${pol[0]}" y2="${pol[1]}" style="stroke-width:1"/>`;
-  s+=`<path class="gl" d="M${apex[0]+2} ${apex[1]} Q ${apex[0]+16} ${(apex[1]+p3[1])/2} ${p3[0]+2} ${p3[1]}"/><text class="hl" x="${apex[0]+22}" y="${(apex[1]+p3[1])/2+4}">A</text>`;
-  s+=`<path class="gd" d="M${p3[0]+2} ${p3[1]} Q ${p3[0]+40} ${(p3[1]+pol[1])/2} ${pol[0]+2} ${pol[1]}"/><text x="${p3[0]+44}" y="${(p3[1]+pol[1])/2+4}" class="${show?'hl':''}">B${show?' ＝ Aの5倍':' ＝ ？'}</text>`;
-  s+=starPath(pol[0],pol[1],9)+`<text x="${pol[0]-16}" y="${pol[1]+4}" text-anchor="end">北極星</text>`;
-  s+=`<text class="sm" x="${p1[0]-6}" y="${p1[1]-12}" text-anchor="middle">カシオペヤ座</text>`;
-  return svg('0 0 300 320',s,'カシオペヤ座から北極星をさがす図');
-}
-function dipperFinder(show){
-  const b3=[70,300],b4=[80,255],v=[b4[0]-b3[0],b4[1]-b3[1]],pol=[b4[0]+5*v[0],b4[1]+5*v[1]];
-  const b1=[150,262],b2=[142,306],h1=[192,250],h2=[228,262],h3=[268,296];
-  let s='';
-  s+=`<polyline class="ln" points="${[b4,b1,b2,b3,b4].map(p=>p.join(',')).join(' ')}"/><polyline class="ln" points="${[b1,h1,h2,h3].map(p=>p.join(',')).join(' ')}"/>`;
-  [b1,b2,b3,h1,h2,h3].forEach(p=>s+=`<circle class="dot" cx="${p[0]}" cy="${p[1]}" r="4"/>`);
-  s+=starPath(b3[0],b3[1],show?8:5)+starPath(b4[0],b4[1],show?8:5);
-  s+=`<line class="dash" x1="${b4[0]}" y1="${b4[1]}" x2="${pol[0]}" y2="${pol[1]}"/>`;
-  s+=`<text class="hl" x="${b3[0]-18}" y="${(b3[1]+b4[1])/2+4}">A</text>`;
-  s+=`<text x="${(b4[0]+pol[0])/2-18}" y="${(b4[1]+pol[1])/2}" text-anchor="end" class="${show?'hl':''}">B${show?'＝Aの5倍':''}</text>`;
-  s+=starPath(pol[0],pol[1],9)+`<text x="${pol[0]+14}" y="${pol[1]+4}">北極星</text>`;
-  s+=`<text class="sm" x="${h2[0]}" y="${h2[1]+30}" text-anchor="middle">北斗七星</text>`;
-  return svg('0 0 320 330',s,'北斗七星から北極星をさがす図');
-}
-function trails(show){
-  const cx=250,cy=205;let s='';
-  [55,78,96,118,140].forEach((r,i)=>{const a0=(118+i*3)*D,a1=(158+i*3)*D;
-    const x0=cx+r*Math.cos(a0),y0=cy-r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1);
-    s+=`<path class="ln" d="M${x0} ${y0} A${r} ${r} 0 0 0 ${x1} ${y1}"/><circle cx="${x0}" cy="${y0}" r="4" fill="var(--ground)" stroke="var(--ink)" stroke-width="1.5"/><circle class="dot" cx="${x1}" cy="${y1}" r="4"/>`;
-  });
-  s+=`<circle class="dot" cx="${cx}" cy="${cy}" r="3.5"/><text x="${cx-10}" y="${cy+4}" text-anchor="end" class="${show?'hl':''}">${show?'北極星':'星A'}</text>`;
-  s+=`<text class="sm" x="70" y="40">カシオペヤ座の星の線</text><text class="sm" x="70" y="228">○ 撮影開始　● 撮影終了</text>`;
-  return svg('0 0 320 240',s,'長時間撮影した北の空');
-}
-function wAt(x,y,rot){return `<g transform="translate(${x} ${y}) rotate(${rot})"><polyline class="ln" points="-16,-6 -8,6 0,-3 8,6 16,-6"/>${[-16,-8,0,8,16].map((px,i)=>`<circle class="dot" cx="${px}" cy="${[-6,6,-3,6,-6][i]}" r="2.6"/>`).join('')}</g>`}
-function monthFig(show){
-  const cx=160,cy=200,r=130;let s='';
-  const pt=a=>[cx+r*Math.cos(a*D),cy-r*Math.sin(a*D)];
-  const n=pt(50),d=pt(80);
-  s+=`<line class="dash" x1="${cx}" y1="${cy}" x2="${n[0]}" y2="${n[1]}"/><line class="dash" x1="${cx}" y1="${cy}" x2="${d[0]}" y2="${d[1]}"/>`;
-  s+=wAt(n[0],n[1],-40)+wAt(d[0],d[1],-10);
-  s+=`<text class="sm" x="${n[0]+18}" y="${n[1]+20}">11月5日 18時</text><text class="sm" x="${d[0]+22}" y="${d[1]}">12月5日 18時</text>`;
-  const r2=50,a=pt(50),q=[cx+r2*Math.cos(50*D),cy-r2*Math.sin(50*D)],w=[cx+r2*Math.cos(80*D),cy-r2*Math.sin(80*D)];
-  s+=`<path class="gl" d="M${q[0]} ${q[1]} A${r2} ${r2} 0 0 0 ${w[0]} ${w[1]}"/><text class="hl" x="${cx+38}" y="${cy-56}">${show?'30°':'？°'}</text>`;
-  s+=`<circle class="dot" cx="${cx}" cy="${cy}" r="4"/><text class="sm" x="${cx-10}" y="${cy+4}" text-anchor="end">北極星</text>`;
-  s+=ground(320,245)+`<text x="${cx}" y="268" text-anchor="middle">北</text>`;
-  return svg('0 0 320 276',s,'1か月ごとのカシオペヤ座の位置');
-}
-function seasonPaths(){
-  let s='';const y=200;
-  const arc=(x0,peak,x1,label,ly)=>`<path class="ln" d="M${x0} ${y} Q 200 ${2*peak-y} ${x1} ${y}"/><text class="sm" x="200" y="${ly}" text-anchor="middle">${label}</text>`;
-  s+=arc(40,28,360,'はくちょう座：北寄りからのぼり、頭の上付近',22);
-  s+=arc(20,100,380,'オリオン座：真東→南の空→真西',94);
-  s+=arc(110,168,290,'さそり座：南寄り、低い所',160);
-  s+=ground(400,y)+`<text x="20" y="${y+24}">東</text><text x="200" y="${y+24}" text-anchor="middle">南</text><text x="380" y="${y+24}" text-anchor="end">西</text>`;
-  return svg('0 0 400 232',s,'季節の星座の通り道');
-}
-function dirFig(facing){
-  const cx=150,cy=125;let s='';
-  const arrows=[['ア',-135],['イ',-45],['ウ',135],['エ',45]];
-  s+=`<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--mute)"/></marker></defs>`;
-  arrows.forEach(([k,a])=>{const x=cx+70*Math.cos(a*D),y=cy+70*Math.sin(a*D);
-    s+=`<line class="ln" x1="${cx+16*Math.cos(a*D)}" y1="${cy+16*Math.sin(a*D)}" x2="${x}" y2="${y}" marker-end="url(#ah)"/><text x="${cx+88*Math.cos(a*D)}" y="${cy+88*Math.sin(a*D)+5}" text-anchor="middle">${k}</text>`;});
-  s+=starPath(cx,cy,11);
-  s+=`<path class="gnd" d="M0 222 H40 V206 H70 V214 H110 V198 H130 V214 H180 V202 H215 V210 H260 V196 H300 V250 H0Z"/>`;
-  const [L,R]=facing==='東'?['北','南']:['南','北'];
-  s+=`<text class="sm" x="12" y="244">← ${L}</text><text class="sm" x="288" y="244" text-anchor="end">${R} →</text><text x="${cx}" y="244" text-anchor="middle">${facing}</text>`;
-  return svg('0 0 300 252',s,facing+'の空の星');
-}
-
-/* ---------- 問題 ---------- */
-const CATS={find:['北極星をさがす','見つけ方・星座'],day:['1日の動き','1時間に何度？'],month:['1か月の動き','同じ時刻で比べる'],season:['季節の星座','通り道と向き']};
-const DAYL={ア:'19時',イ:'20時',ウ:'21時'};
-const NL={1:'20時',2:'22時',3:'0時'};
+{
+const SECS=[
+ {id:'a',name:'利根川の流れ',d:'源流・県境・流域面積・関東の都県'},
+ {id:'b',name:'上流と下流の農業',d:'米づくり・嬬恋村のキャベツ・グラフ'},
+ {id:'c',name:'東京の発展と川の工事',d:'人口・徳川家康・流れを変える工事・ダム'}];
+// c[0] が正解。表示のときにシャッフルする
 const Q=[
- {c:'find',t:'choice',q:'北極星が、方角を知る手がかりとして役立つのはなぜですか。',a:'いつもほぼ真北にあり、時間がたってもほとんど動かないから',o:['夜空でいちばん明るい星だから','いつも真南の空の高い所にあるから','季節ごとに見える方角が変わるから'],e:'北極星は北の空の星が回る動きの中心にあるので、位置がほとんど変わりません。北極星の方向がほぼ真北です。'},
- {c:'find',t:'choice',q:'北極星は何等星ですか。',a:'2等星',o:['1等星','3等星','4等星'],e:'北極星は2等星で、まわりにも星がたくさんあります。手がかりがないと見つけにくいので、北斗七星やカシオペヤ座を使ってさがします。'},
- {c:'find',t:'choice',q:'北極星がふくまれている星座はどれですか。',a:'こぐま座',o:['おおぐま座','カシオペヤ座','オリオン座'],e:'北極星は、こぐま座のしっぽの先にある星です。'},
- {c:'find',t:'choice',q:'おおぐま座の中の、ひしゃくの形をした7つの星を何といいますか。',a:'北斗七星',o:['夏の大三角','冬の大三角','すばる'],e:'ひしゃくは水をくむ道具で、水を入れる部分に細長い柄がついた形です。この形の7つの星を北斗七星といいます。'},
- {c:'find',t:'choice',q:'カシオペヤ座は、アルファベットの何の形をしていますか。',a:'W',o:['V','L','T'],k:1,e:'カシオペヤ座はWの形です。見る時刻によってはMのように見えることもあります。'},
- {c:'find',t:'num',q:'図はカシオペヤ座を使って北極星をさがす方法です。Aの長さを1とすると、Bの長さはいくつですか。',a:5,u:'',fig:cassFinder,e:'両はしの2辺をのばして交わった点と、まん中の星を結んだ長さがAです。これを5倍のばした所に北極星があります。'},
- {c:'find',t:'choice',q:'北斗七星を使って北極星をさがすとき、どの星を使いますか。',a:'ひしゃくの水を入れる部分の、先にある2つの星',o:['柄の先にある2つの星','柄と水を入れる部分のつなぎ目の2つの星','7つの星のまん中にある1つの星'],fig:dipperFinder,e:'水を入れる部分の先の2つの星（図のA）を結び、くみ口の方へのばします。'},
- {c:'find',t:'num',q:'北斗七星のひしゃくの先の2つの星の間（A）を、何倍のばした所に北極星がありますか。',a:5,u:'倍',fig:dipperFinder,e:'カシオペヤ座と同じく、5倍です。北斗七星とカシオペヤ座は北極星をはさんで反対側にあります。'},
- {c:'find',t:'choice',q:'北の空を長い時間撮影すると、カシオペヤ座の星は線のように写りましたが、星Aだけは1点に写りました。星Aは何という星ですか。',a:'北極星',o:['シリウス','アンタレス','ベガ'],fig:trails,e:'カシオペヤ座の線は、星Aを中心にした円の一部になっています。動きの中心でほとんど動かない星は北極星です。'},
- {c:'find',t:'choice',q:'こぐま座・おおぐま座・カシオペヤ座は、日本では主にどの空に見えますか。',a:'北の空',o:['東の空','西の空','南の空'],k:1,e:'どれも北極星の近くにある星座なので、北の空に見えます。'},
+['a','利根川の源流部（川が流れ出すところ）がある山脈はどれ？',['越後山脈','奥羽山脈','飛驒山脈','赤石山脈'],'利根川の本流は、群馬県と新潟県の県境にある越後山脈から流れ出しています。'],
+['a','群馬県・埼玉県・長野県の県境にあり、支流の神流川が流れ出す山地はどれ？',['関東山地','中国山地','紀伊山地','九州山地'],'支流の中には、関東山地から流れ出すもの（神流川など）があります。'],
+['a','利根川が「日本で最大」であることで知られているのはどれ？',['流域面積','川の長さ','河口の幅','流れの速さ'],'利根川は流域面積が日本でいちばん広い川です。長さは日本で2番目です。'],
+['a','利根川の長さは、日本の川の中で何番目？',['2番目','1番目','3番目','5番目'],'いちばん長いのは信濃川（367km）。利根川（322km）は2番目です。'],
+['a','下の表で、利根川の長さと流域面積をしめしているのはどれ？',['イ（322km・16840km²）','ア（367km・11900km²）','ウ（268km・14330km²）','オ（249km・10150km²）'],'流域面積がいちばん大きい16840km²が利根川です。367kmでいちばん長いアは信濃川です。','rivers'],
+['a','利根川がほぼ東西に横断するように流れている、日本最大の平野はどれ？',['関東平野','濃尾平野','越後平野','石狩平野'],'東京もふくまれる関東平野は、日本でもっとも広い平野です。'],
+['a','利根川の中流が県境になっている2つの県はどれ？',['群馬県と埼玉県','茨城県と千葉県','栃木県と茨城県','埼玉県と東京都'],'中流は群馬県と埼玉県の県境を流れます。'],
+['a','利根川の下流が県境になっている2つの県はどれ？',['茨城県と千葉県','群馬県と埼玉県','千葉県と東京都','栃木県と群馬県'],'下流は茨城県と千葉県の県境を流れ、太平洋へ注ぎます。'],
+['a','いまの利根川は、最後にどこへ流れこんでいる？',['太平洋','日本海','東京湾','瀬戸内海'],'千葉県の銚子から太平洋に流れ出ています。（江戸時代より前は江戸湾＝東京湾に流れこんでいました）'],
+['a','関東地方の1都6県のうち、利根川の流域面積にふくまれていない県はどれ？',['神奈川県','栃木県','茨城県','埼玉県'],'神奈川県は利根川の流域から外れています（相模川などが流れる県です）。'],
+['a','関東地方の北西部にあり、利根川の源流部と上流部がある県はどれ？（演習の地図の「1」）',['群馬県','栃木県','長野県','新潟県'],'地図の1は群馬県。2栃木県、3茨城県、4埼玉県、5神奈川県、6千葉県です。'],
+['a','関東地方の北部で、群馬県と茨城県のあいだにある県はどれ？（地図の「2」）',['栃木県','埼玉県','山梨県','福島県'],'地図の2は栃木県です。'],
+['a','東京都の北にあり、荒川が流れている県はどれ？（地図の「4」）',['埼玉県','神奈川県','千葉県','茨城県'],'地図の4は埼玉県です。'],
+['a','関東地方の1都6県に「入らない」県はどれ？',['山梨県','栃木県','群馬県','茨城県'],'関東地方は東京都と、茨城・栃木・群馬・埼玉・千葉・神奈川の6県です。'],
+['b','利根川下流にある茨城県と千葉県は、関東地方の1都6県の中で何がさかん？',['稲作（米づくり）','果物づくり','酪農','茶づくり'],'利根川下流の水の豊かな土地をいかして、稲作がさかんです。'],
+['b','「米の収穫量の多い道県」のグラフで、5％をしめる関東地方の県「Ⅰ」はどれ？',['茨城県','栃木県','千葉県','群馬県'],'グラフでは千葉4％・栃木4％よりも多い5％。関東でいちばん米の収穫量が多いのは茨城県です。'],
+['b','千葉県と茨城県の県境付近に広がる、利根川下流部の水の豊かな地域のよび名はどれ？',['水郷','輪中','扇状地','台地'],'水路が多く水の豊かなこの地域は「水郷」とよばれます。輪中は岐阜県などの、堤防で囲まれた地域です。'],
+['b','利根川下流部で、秋の台風の被害をさけるために8月の終わりに収穫・出荷される米を何という？',['早場米','古米','もち米','酒米'],'台風が来る前に早く収穫する米を「早場米」といいます。'],
+['b','キャベツづくりで有名な嬬恋村がある県はどれ？',['群馬県','長野県','栃木県','埼玉県'],'嬬恋村は利根川上流部の群馬県にあります。'],
+['b','群馬県嬬恋村がさかんに作っている野菜はどれ？',['キャベツ','レタス','だいこん','ねぎ'],'嬬恋村は日本有数のキャベツの産地です。'],
+['b','嬬恋村は、長野県と群馬県の県境にあるどの山の山麓にある？',['浅間山','富士山','赤城山','筑波山'],'嬬恋村は浅間山の山麓（ふもと）に位置しています。'],
+['b','嬬恋村の夏の気候はどんな気候？',['夏でもすずしい','夏はとても暑い','一年中あたたかい','夏に雪がふる'],'嬬恋村は夏でもすずしい気候です。'],
+['b','嬬恋村が夏でもすずしいのはなぜ？',['標高が高いところにあるから','海のすぐそばにあるから','日本の南のほうにあるから','広い平野の真ん中にあるから'],'標高が高いところは気温が低くなるので、夏でもすずしくなります。'],
+['b','東京に入荷するキャベツで、群馬県産が76％をしめるのはどの時期？',['7〜9月','1〜3月','4〜6月','10〜12月'],'すずしい夏をいかして、ほかの産地でつくりにくい7〜9月に多く出荷しています。','cab'],
+['b','東京に入荷するキャベツで、愛知県（渥美半島）産がいちばん多い（57％）のはどの時期？',['1〜3月','4〜6月','7〜9月','10〜12月'],'愛知県産は冬の1〜3月に多くなります。','cab'],
+['b','渥美半島では、一年の中でも気温が（　）時期にキャベツを栽培している。（　）に入ることばは？',['低い','高い','いちばん高い','変わらない'],'愛知県産が多いのは冬の1〜3月。渥美半島では一年の中で気温が低い時期にキャベツを栽培しています。','atsumi'],
+['b','グラフ3で、群馬県をしめしているのはア・イのどちら？',['イ','ア'],'7〜9月に76％と圧倒的に多いのがイ。夏でもすずしい嬬恋村がある群馬県です。','cab3'],
+['b','グラフ3で、千葉県をしめしているのはア・イのどちら？',['ア','イ'],'アは4〜6月に32％と多く、7〜9月はわずか1％。夏に暑くなる銚子がある千葉県です。','cab3'],
+['b','千葉県の銚子は、米づくりのほかに何がさかん？',['キャベツをふくむ野菜づくり','茶づくり','みかんづくり','牛を育てる酪農'],'銚子は米づくりとともに、キャベツなどの野菜づくりもさかんです。'],
+['b','グラフ2を見て、冬（1・2月）の平均気温が0℃を下回っているのはどちら？',['嬬恋村','銚子','両方','どちらも下回らない'],'嬬恋村は冬はとても寒く、0℃より低くなります。銚子は海に近く冬も7℃ほどです。','choshi'],
+['b','嬬恋村のキャベツづくりの説明として正しいものはどれ？',['夏でもすずしい気候をいかして、ほかの産地でつくりにくい夏にキャベツを出荷している','冬でもあたたかい気候をいかして、冬にキャベツを出荷している','一年中暑い気候をいかして、一年中同じ量を出荷している','雨がほとんどふらない気候をいかして、春だけ出荷している'],'キャベツはすずしい気候でよく育ちます。嬬恋村は夏のすずしさをいかしています。'],
+['c','首都の東京と周辺の1都3県（東京圏）には、日本の人口のおよそ何％が集中している？',['30％','10％','15％'],'グラフでは東京圏が30％。半径50km圏に日本の人口のおよそ4分の1が集まっています。'],
+['c','東京圏のおよその人口はどれ？（日本の総人口は約1億2433万人）',['3700万人','1600万人','5800万人'],'1億2433万人の30％なので、およそ3700万人です。'],
+['c','日本の総人口にしめる大阪圏の人口の割合はどれ？',['14％','9％','30％','47％'],'東京圏30％、大阪圏14％、名古屋圏9％、その他47％です。'],
+['c','東京から半径50kmの圏内の大部分にふくまれる、東京都と県境を接する3県はどれ？',['埼玉県・千葉県・神奈川県','埼玉県・群馬県・神奈川県','千葉県・茨城県・埼玉県','神奈川県・山梨県・千葉県'],'東京圏＝東京都・埼玉県・千葉県・神奈川県です。'],
+['c','利根川は古くから何とよばれていた？',['坂東太郎','筑紫次郎','四国三郎','武蔵太郎'],'利根川は「坂東太郎」。筑後川は「筑紫次郎」、吉野川は「四国三郎」とよばれます。'],
+['c','1590年から江戸の都市開発を始めた人物はだれ？',['徳川家康','織田信長','豊臣秀吉','源頼朝'],'徳川家康が江戸に移り、都市の開発を始めました。'],
+['c','徳川家康が江戸の都市開発を始めたのは何年？',['1590年','1603年','1868年','1192年'],'1590年です。（1603年は家康が江戸幕府を開いた年）'],
+['c','江戸時代より前、利根川はどこに流れこんでいた？',['江戸湾（東京湾）','銚子から太平洋','相模湾','日本海'],'もともとは江戸湾（東京湾）に流れこんでいました。'],
+['c','徳川家康が利根川の流れを変える工事を始めた、いちばんの目的は？',['江戸の町を洪水からまもるため','田んぼの水を減らすため','海水浴場をつくるため','雪どけ水を集めるため'],'江戸を流れる川は大雨のたびに洪水を起こしていたため、江戸を洪水からまもろうとしました。'],
+['c','2つの地図（江戸時代以前／江戸時代の中ごろ）を見くらべて、利根川の流れを変える工事を正しく説明しているものはどれ？',['江戸湾に流れこんでいた利根川を渡良瀬川や鬼怒川とつなげて、銚子から太平洋に流れこむようにした','利根川に流れこむ支流の多くを、那珂川や相模川につなげ直した','利根川の上流域に新たな分流を多くつくることで、江戸に流れこむ水の量を少なくした'],'答えはウ。利根川を東へつなげ、銚子から太平洋へ流れ出るように変えました。'],
+['c','工事によって、利根川が太平洋に流れ出るようになった千葉県の地名は？',['銚子','那珂湊','佐原','野田'],'利根川は千葉県の銚子から太平洋に流れ出ます。'],
+['c','利根川の流れを変えたことで、洪水をふせぐほかに何がもたらされた？',['利根川を利用する水運と、周辺の都市の発達','鉄道と空港の建設','大きな工業地帯と港','山の森林がふえたこと'],'舟で物を運ぶ水運がさかんになり、川沿いの都市が発達しました。'],
+['c','洪水を防ぐために、いま利根川の上流に多く建設されているものは？',['ダム','灯台','運河','防波堤'],'上流に多くのダムがつくられ、川の水の流量を調節しています。'],
+['c','利根川のダムの役割として正しいものはどれ？',['洪水を防ぐだけでなく、首都圏に安定した水を供給している','船が通る道をつくるためだけにある','川の魚をふやすためだけにある','海水が川に入るのを防いでいる'],'ダムは洪水を防ぐほか、人々の生活が水不足でこまらないように、関東各地へ水を送る役目もあります。']
+].map((r,i)=>({id:i,s:r[0],q:r[1],c:r[2],e:r[3],f:r[4]}));
 
- {c:'day',t:'num',q:'南の空の星Aは、19時にア、20時にイ、21時にウの位置にありました。ア〜サの間の角度はすべて15°です。星Aは1時間で何度動きますか。',a:15,u:'度',fig:()=>southArc({labels:DAYL}),e:'1時間に1つずつ動いているので15°です。星は1時間に約15°動いて見えます。'},
- {c:'day',t:'choice',q:'星Aがアの位置にあるとき（19時）から4時間後、星Aはどの位置にありますか。',a:'オ',o:['エ','オ','カ','キ'],k:1,fig:s=>southArc({labels:DAYL,star:s?'オ':null}),e:'1時間に1つずつ進みます。ア→イ→ウ→エ→オで、4時間後はオです。'},
- {c:'day',t:'choice',q:'11月1日19時にアにあった星Aは、11月2日の2時にはどの位置にありますか。',a:'ク',o:['キ','ク','ケ','コ'],k:1,fig:s=>southArc({labels:DAYL,star:s?'ク':null}),e:'19時から次の日の2時までは7時間です。アから7つ進むとクになります。'},
- {c:'day',t:'num',q:'星Aが図のコの位置にあるのは、11月2日の何時ですか。24時制で答えましょう。',a:4,u:'時',fig:s=>southArc({labels:DAYL,star:s?'コ':null}),e:'アからコまでは9つなので9時間後です。19＋9＝28時、24を引いて次の日の4時です。'},
- {c:'day',t:'choice',q:'南の空の星は、時間とともにどのように動いて見えますか。',a:'東から南の空の高い所を通って西へ',o:['西から南の空の高い所を通って東へ','南から北へまっすぐ','ほとんど動かない'],e:'南の空の星は、太陽と同じように東から西へ動いて見えます。'},
- {c:'day',t:'choice',q:'北の空の星は、北極星を中心にしてどちら向きに回って見えますか。',a:'反時計回り',o:['時計回り'],k:1,fig:()=>northDial({labels:NL,star:3}),e:'①（20時）→②（22時）→③（0時）と、時計の針と反対向きに回ります。'},
- {c:'day',t:'num',q:'12月8日20時に①、22時に②、12月9日0時に③の位置に星Aがありました。①〜⑫の間はすべて30°です。星Aは2時間で何度動きましたか。',a:30,u:'度',fig:()=>northDial({labels:NL,star:3}),e:'2時間で1つ（30°）動きます。1時間にすると15°で、南の空の星と同じ速さです。'},
- {c:'day',t:'choice',q:'星Aは、12月9日の2時にはどの位置にありますか。',a:'④',o:['③','④','⑤','⑫'],k:1,fig:s=>northDial({labels:NL,star:s?4:3}),e:'0時の③から2時間で1つ進むので④です。'},
- {c:'day',t:'num',q:'12月8日のある時刻に、星Aは⑨の位置にありました。何時ですか。24時制で答えましょう。',a:12,u:'時',fig:s=>northDial({labels:NL,star:s?9:1}),e:'⑨は①（20時）から時計回りに4つもどった所です。2時間×4＝8時間前なので、20－8＝12時です。'},
- {c:'day',t:'num',q:'星は1日（24時間）で、北極星のまわりを約何度回りますか。',a:360,u:'度',e:'15°×24時間＝360°。1日でほぼ1周します。'},
+const T={ // 月別平均気温（教材グラフからの読みとり目安）
+ tsu:[-5,-4.5,-0.5,5.5,11,15.5,19.5,20,16,10,4.5,-1],
+ cho:[6.5,7,9.5,14,17.5,20.5,23.5,25.5,23,18.5,14,10],
+ atu:[6,6.5,9.5,14.5,19,22.5,26,27.5,24.5,19.5,14.5,9.5]};
+function climate(a,an,cap){
+ const x=m=>40+m*30,y=t=>170-(t+10)*4.2;
+ const line=(d,col)=>`<polyline fill="none" stroke="${col}" stroke-width="2.5" points="${d.map((t,m)=>x(m)+','+y(t)).join(' ')}"/>`+d.map((t,m)=>`<circle cx="${x(m)}" cy="${y(t)}" r="3" fill="${col}"/>`).join('');
+ const grid=[-10,0,10,20,30].map(t=>`<line x1="34" x2="376" y1="${y(t)}" y2="${y(t)}" stroke="currentColor" opacity=".2"/><text x="28" y="${y(t)+4}" font-size="11" text-anchor="end" fill="currentColor">${t}</text>`).join('');
+ const mon=T.tsu.map((_,m)=>`<text x="${x(m)}" y="186" font-size="11" text-anchor="middle" fill="currentColor">${m+1}</text>`).join('');
+ return `<figure class="fig"><figcaption>${cap}</figcaption><svg viewBox="0 0 390 196" width="100%" style="max-width:520px;display:block">${grid}${mon}${line(T[a],'#e07b1a')}${line(T.tsu,'#1f6fb2')}
+ <text x="${x(5)}" y="${y(T[a][5])-10}" font-size="12" fill="#e07b1a" font-weight="700">${an}</text><text x="${x(4)+6}" y="${y(T.tsu[4])+18}" font-size="12" fill="#1f6fb2" font-weight="700">嬬恋村</text></svg><small>（℃・月）教材のグラフから読みとった目安</small></figure>`}
+const CAB=[['1〜3月',[['愛知',57],['千葉',22,'a'],['神奈川',15],['他',6]]],['4〜6月',[['千葉',32,'a'],['神奈川',23],['愛知',20],['茨城',13],['群馬',7,'i'],['他',5]]],['7〜9月',[['群馬',76,'i'],['岩手',14],['長野',6],['茨城',2],['千葉',1,'a'],['他',1]]],['10〜12月',[['群馬',32,'i'],['千葉',20,'a'],['愛知',17],['茨城',15],['他',16]]]];
+function cab(hide){
+ return `<figure class="fig"><figcaption>${hide?'グラフ3':'グラフ'}　東京に入荷されるキャベツの3か月ごとの内訳（2024年）</figcaption><div class="bars">${CAB.map(([p,rs])=>`<div class="br"><span>${p}</span><div class="st">${rs.map(([n,v,k])=>`<span class="${hide&&k?k:''}" style="width:${v}%" title="${n}${v}%">${v>=6?(hide&&k?(k=='a'?'ア':'イ')+' '+v+'%':n+v):''}</span>`).join('')}</div></div>`).join('')}</div><small>帯の長さは割合（％）。東京都中央卸売市場の資料による${hide?'。ア＝うすい灰色、イ＝こい灰色':''}</small></figure>`}
+const FIG={
+ rivers:()=>`<figure class="fig"><figcaption>日本の主な川の長さと流域面積（『理科年表2026』による）</figcaption><table><tr><th></th><th>長さ（km）</th><th>流域面積（km²）</th></tr>${[['ア',367,11900],['イ',322,16840],['ウ',268,14330],['エ',256,5590],['オ',249,10150]].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2].toLocaleString()}</td></tr>`).join('')}</table></figure>`,
+ cab:()=>cab(false),cab3:()=>cab(true),
+ atsumi:()=>climate('atu','渥美半島','グラフ　渥美半島と嬬恋村の月別平均気温'),
+ choshi:()=>climate('cho','銚子','グラフ2　銚子と嬬恋村の気温')};
 
- {c:'month',t:'num',q:'毎月5日の18時に北の空を観察しました。11月5日から12月5日の間に、カシオペヤ座は北極星を中心に何度動きましたか。',a:30,u:'度',fig:monthFig,e:'同じ時刻に観察すると、星は1か月に約30°ずつ動いて見えます。'},
- {c:'month',t:'choice',q:'同じ時刻に観察すると、北の空の星は1か月ごとにどちら向きに動いて見えますか。',a:'反時計回り',o:['時計回り'],k:1,fig:monthFig,e:'1日の動きと同じく、北極星を中心に反時計回りです。'},
- {c:'month',t:'choice',q:'11月5日18時の位置から、北極星を中心に180°回った位置にカシオペヤ座が見えるのは、いつの18時ですか。',a:'5月5日',o:['2月5日','8月5日','12月5日'],e:'1か月で30°なので、180°÷30°＝6か月。11月5日の6か月後は5月5日です。'},
- {c:'month',t:'choice',q:'星が同じ位置に見える時刻は、1か月でどう変わりますか。',a:'約2時間早くなる',o:['約2時間おそくなる','約1時間早くなる','変わらない'],e:'1か月で30°先に進んでいます。30°は2時間分（15°×2）なので、2時間早い時刻に同じ位置に見えます。'},
- {c:'month',t:'num',q:'同じ時刻に観察すると、星は1年（12か月）で約何度回りますか。',a:360,u:'度',e:'30°×12か月＝360°。1年たつと、同じ時刻に同じ位置にもどります。'},
+const $=id=>document.getElementById(id);
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(){try{return JSON.parse(localStorage.getItem('tone-wrong')||'[]')}catch(e){return[]}},set(v){try{localStorage.setItem('tone-wrong',JSON.stringify(v))}catch(e){}}};
+let sel=new Set(SECS.map(s=>s.id)),list=[],cur=0,pts=0,wrong=[];
+const LET='アイウエ';
 
- {c:'season',t:'choice',q:'「はくちょう座」の星の通り道はどれですか。',a:'真東よりも北寄りからのぼり、頭の上付近を通る',o:['真東よりも南寄りからのぼり、南の空の低い所を通る','秋分の日の太陽とほぼ同じ通り道を通る','西からのぼり、東にしずむ'],after:seasonPaths,e:'はくちょう座（夏の星座）は北寄りからのぼり、高く頭の上付近を通ります。'},
- {c:'season',t:'choice',q:'「さそり座」の星の通り道はどれですか。',a:'真東よりも南寄りからのぼり、南の空の低い所を通る',o:['真東よりも北寄りからのぼり、頭の上付近を通る','秋分の日の太陽とほぼ同じ通り道を通る','北極星のまわりを回り、しずまない'],after:seasonPaths,e:'さそり座は南寄りからのぼり、南の空の低い所を通ります。'},
- {c:'season',t:'choice',q:'「オリオン座」の星の通り道はどれですか。',a:'秋分の日の太陽とほぼ同じ通り道を通る',o:['真東よりも北寄りからのぼり、頭の上付近を通る','真東よりも南寄りからのぼり、南の空の低い所を通る','北の空でしずまずに回る'],after:seasonPaths,e:'オリオン座はほぼ真東からのぼり、南の空を通ってほぼ真西にしずみます。秋分の日の太陽の通り道とほぼ同じです。'},
- {c:'season',t:'choice',q:'東の空の低い所にオリオン座の星が見えました。この星は、このあとどの向きに動いて見えますか。',a:'イ',o:['ア','イ','ウ','エ'],k:1,fig:()=>dirFig('東'),e:'東からのぼった星は南の空へ向かいます。東を向いたとき南は右なので、右ななめ上（イ）に動きます。'},
- {c:'season',t:'choice',q:'西の空の低い所に見えた星は、このあとどの向きに動いて見えますか。',a:'エ',o:['ア','イ','ウ','エ'],k:1,fig:()=>dirFig('西'),e:'南の空を通ってきた星は、西を向いたとき左（南）から来て、右ななめ下（エ）へしずんでいきます。'},
-];
-Q.forEach((q,i)=>q.id=i);
-
-/* ---------- 状態 ---------- */
-const app=document.getElementById('app');
-const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let S={cats:new Set(Object.keys(CATS)),n:10,list:[],i:0,res:[],done:false,view:'start'};
-
-function render(){({start:renderStart,quiz:renderQ,result:renderResult})[S.view]()}
-
-function renderStart(){
-  const best=store.get('hoshi-best');
-  app.innerHTML=`<section class="card">
-    <h2>${rb('どの問題をとく？')}</h2>
-    <p class="lead">${rb('プリント「夜空を動く星」の内容から出題します。分野をえらんでスタート。')}</p>
-    <div class="cats">${Object.entries(CATS).map(([k,[n,s]])=>`<div class="cat"><input type="checkbox" id="c-${k}" value="${k}" ${S.cats.has(k)?'checked':''}><label for="c-${k}"><b>${rb(n)}</b><span>${rb(s)}・${Q.filter(q=>q.c===k).length}問</span></label></div>`).join('')}</div>
-    <div class="row"><span style="font-size:14px">問題数</span><div class="seg">${[5,10,0].map(n=>`<input type="radio" name="n" id="n${n}" value="${n}" ${S.n===n?'checked':''}><label for="n${n}">${n?n+'問':'ぜんぶ'}</label>`).join('')}</div></div>
-    <div class="row" style="justify-content:space-between"><button class="btn" id="go">スタート</button>${best?`<span class="best">さいこう記録 ${best.s} / ${best.t}</span>`:''}</div>
-  </section>`;
-  app.querySelectorAll('.cat input').forEach(el=>el.onchange=()=>{el.checked?S.cats.add(el.value):S.cats.delete(el.value)});
-  app.querySelectorAll('input[name=n]').forEach(el=>el.onchange=()=>S.n=+el.value);
-  document.getElementById('go').onclick=()=>{
-    let pool=Q.filter(q=>S.cats.has(q.c));
-    if(!pool.length){S.cats=new Set(Object.keys(CATS));pool=Q.slice()}
-    pool=shuffle(pool.slice());if(S.n)pool=pool.slice(0,S.n);
-    start(pool);
-  };
+$('secs').innerHTML=SECS.map(s=>`<button class="sec" data-s="${s.id}" aria-pressed="true"><b>${s.name}</b><span>${s.d}（${Q.filter(q=>q.s==s.id).length}問）</span></button>`).join('');
+$('secs').addEventListener('click',e=>{const b=e.target.closest('.sec');if(!b)return;const s=b.dataset.s;sel.has(s)?sel.delete(s):sel.add(s);b.setAttribute('aria-pressed',sel.has(s));$('start').disabled=!sel.size;$('start').toggleAttribute('disabled',!sel.size)});
+function boat(f){const p=$('rp'),L=p.getTotalLength(),pt=p.getPointAtLength(L*f);$('boat').setAttribute('transform',`translate(${pt.x} ${pt.y-2})`)}
+function show(id){for(const s of['home','quiz','res'])$(s).classList.toggle('hide',s!=id);window.scrollTo(0,0)}
+function refreshHome(){const w=store.get();$('retryWrong').classList.toggle('hide',!w.length);$('retryWrong').textContent=`前にまちがえた問題だけ（${w.length}問）`;boat(0)}
+function begin(qs){list=shuf(qs).map(q=>({...q,o:shuf(q.c)}));cur=0;pts=0;wrong=[];show('quiz');render()}
+function render(){
+ const q=list[cur];
+ $('pos').textContent=`${cur+1} / ${list.length} 問`;$('pt').textContent=`正解 ${pts}`;
+ $('qsec').textContent=SECS.find(s=>s.id==q.s).name;$('qt').textContent=q.q;
+ $('fig').innerHTML=q.f?FIG[q.f]():'';
+ $('chs').className='chs';
+ $('chs').innerHTML=q.o.map((c,i)=>`<button class="ch" data-i="${i}"><i>${LET[i]}</i><span>${c}</span></button>`).join('');
+ $('fb').innerHTML='';$('next').classList.add('hide');boat(cur/list.length);
 }
-function start(list){S.list=list;S.i=0;S.res=[];S.view='quiz';render();window.scrollTo(0,0)}
-
-function renderQ(){
-  const q=S.list[S.i];S.done=false;
-  const opts=q.t==='choice'?(q.k?[...q.o.includes(q.a)?q.o:[q.a,...q.o]]:shuffle([q.a,...q.o])):null;
-  const grid=opts&&opts.every(o=>o.length<=2);
-  const dots=S.list.map((_,i)=>`<i class="${S.res[i]===true?'ok':S.res[i]===false?'ng':''} ${i===S.i?'now':''}"></i>`).join('');
-  app.innerHTML=`<section class="card">
-    <div class="top"><span>${S.i+1} / ${S.list.length}</span><div class="dots">${dots}</div></div>
-    <span class="tag">${rb(CATS[q.c][0])}</span>
-    <p class="q">${rb(q.q)}</p>
-    ${q.fig?`<div class="figbox" id="fig">${q.fig(false)}</div>`:''}
-    ${opts?`<div class="opts ${grid?'grid4':''}">${opts.map(o=>`<button class="opt" data-v="${o}">${rb(o)}</button>`).join('')}</div>`
-      :`<form class="num" id="nf"><input id="numIn" inputmode="numeric" autocomplete="off" aria-label="答え"><span class="unit">${q.u}</span><button class="btn" type="submit">答える</button></form>`}
-    <div id="fb"></div>
-  </section>`;
-  if(opts)app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b.dataset.v,b));
-  else{const f=document.getElementById('nf'),inp=document.getElementById('numIn');inp.focus({preventScroll:true});
-    f.onsubmit=e=>{e.preventDefault();const v=inp.value.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).replace(/[^\d.\-]/g,'');if(v==='')return;answer(Number(v),inp)}}
+$('chs').addEventListener('click',e=>{
+ const b=e.target.closest('.ch');if(!b||$('chs').classList.contains('lock'))return;
+ const q=list[cur],pick=q.o[+b.dataset.i],ok=pick===q.c[0];
+ $('chs').classList.add('lock');
+ [...$('chs').children].forEach((el,i)=>{if(q.o[i]===q.c[0])el.classList.add('ok');else if(el===b)el.classList.add('ng')});
+ if(ok)pts++;else wrong.push(q);
+ $('fb').innerHTML=`<div class="fb ${ok?'':'ng'}"><b>${ok?'正解！':'ざんねん…'}</b>${ok?'':`　正しい答えは「${q.c[0]}」`}<br>${q.e}</div>`;
+ $('pt').textContent=`正解 ${pts}`;$('next').classList.remove('hide');
+ let left=3;const lab=()=>$('next').textContent=`${cur+1<list.length?'つぎへ':'けっかを見る'}（${left}）`;lab();
+ timer=setInterval(()=>{left--;if(left<=0)advance();else lab()},1000);
+});
+let timer=null;
+function stop(){clearInterval(timer);timer=null}
+function advance(){stop();cur++;if(cur<list.length)render();else finish()}
+$('next').addEventListener('click',advance);
+function finish(){
+ boat(1);show('res');
+ const r=pts/list.length;
+ $('sc').textContent=`${pts} / ${list.length}`;
+ $('cm').textContent=r==1?'全問正解！ 銚子まで無事にたどりついたね。':r>=.8?'よくできました！ あと少しで全問正解。':r>=.5?'半分以上できたよ。まちがえた問題をもう一度やってみよう。':'まちがえた問題の説明を読んで、もう一度チャレンジ！';
+ // 今回の結果で「前にまちがえた問題」を更新：正解したものは外し、まちがえたものを足す
+ const done=new Set(list.map(q=>q.id)),keep=store.get().filter(id=>!done.has(id));
+ store.set([...keep,...wrong.map(q=>q.id)]);
+ $('wh').classList.toggle('hide',!wrong.length);$('wrongOnly').classList.toggle('hide',!wrong.length);
+ $('wl').innerHTML=wrong.map(q=>`<li>${q.q}<br>答え：<b>${q.c[0]}</b></li>`).join('');
 }
-function answer(v,el){
-  if(S.done)return;S.done=true;S.pick=v;
-  const q=S.list[S.i],ok=q.t==='choice'?v===q.a:v===q.a;
-  S.res[S.i]=ok;
-  if(q.t==='choice')app.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.dataset.v===q.a)b.classList.add('ok');else if(b===el)b.classList.add('ng')});
-  else{el.disabled=true;el.style.borderColor=ok?'var(--ok)':'var(--ng)';el.parentElement.querySelector('button').disabled=true}
-  const fig=document.getElementById('fig');if(fig&&q.fig)fig.innerHTML=q.fig(true);
-  const last=S.i===S.list.length-1;
-  document.getElementById('fb').innerHTML=`<div class="fb ${ok?'ok':'ng'}"><span class="v">${ok?'正解！':'おしい！ 正解は「'+rb(q.a)+(q.u||'')+'」'}</span><p>${rb(q.e)}</p></div>
-    ${q.after?`<div class="figbox" style="margin-top:12px">${q.after()}</div>`:''}
-    <div class="row" style="margin-top:14px"><button class="btn" id="next">${last?'結果を見る':'次の問題'}</button></div>`;
-  const n=document.getElementById('next');n.focus({preventScroll:true});
-  n.onclick=()=>{if(last){S.view='result';render()}else{S.i++;render()}window.scrollTo({top:0})};
+$('start').addEventListener('click',()=>begin(Q.filter(q=>sel.has(q.s))));
+$('retryWrong').addEventListener('click',()=>{const w=new Set(store.get());const qs=Q.filter(q=>w.has(q.id));if(qs.length)begin(qs)});
+$('again').addEventListener('click',()=>begin(list));
+$('wrongOnly').addEventListener('click',()=>begin(wrong));
+$('home2').addEventListener('click',()=>{refreshHome();show('home')});
+$('quit').addEventListener('click',()=>{stop();refreshHome();show('home')});
+refreshHome();
 }
-function renderResult(){
-  const t=S.list.length,s=S.res.filter(Boolean).length;
-  const best=store.get('hoshi-best');if(!best||s/t>best.s/best.t||(s/t===best.s/best.t&&t>best.t))store.set('hoshi-best',{s,t});
-  const miss=S.list.filter((_,i)=>!S.res[i]);
-  const msg=s===t?'全問正解！ 夜空の名人です。':s/t>=.7?'よくできました。まちがえた所を見直そう。':'図をよく見て、もう一度ちょうせんしよう。';
-  const star=on=>`<svg viewBox="0 0 24 24"><polygon points="12,1.5 14.9,8.6 22.5,9.2 16.7,14.2 18.5,21.6 12,17.6 5.5,21.6 7.3,14.2 1.5,9.2 9.1,8.6" fill="${on?'var(--gold)':'none'}" stroke="var(--gold)" stroke-width="1.3"/></svg>`;
-  app.innerHTML=`<section class="card">
-    <h2>けっか</h2>
-    <p class="score">${s}<small> / ${t}</small></p>
-    <div class="stars">${S.res.map(star).join('')}</div>
-    <p class="lead" style="color:var(--ink)">${rb(msg)}</p>
-    ${miss.length?`<h2 style="font-size:16px">${rb('まちがえた問題')}</h2><ul class="miss">${miss.map(q=>`<li>${rb(q.q)}<br>正解：<b>${rb(q.a)}${q.u||''}</b></li>`).join('')}</ul>`:''}
-    <div class="row">${miss.length?`<button class="btn" id="retry">まちがえた問題だけもう一度</button>`:''}<button class="btn ${miss.length?'sub':''}" id="home">はじめにもどる</button></div>
-  </section>`;
-  if(miss.length)document.getElementById('retry').onclick=()=>start(shuffle(miss.slice()));
-  document.getElementById('home').onclick=()=>{S.view='start';render()};
-}
-
-/* ふりがな切りかえ（回答中は状態を保つ） */
-const furiEl=document.getElementById('furi');
-furi=store.get('hoshi-furi')!==false;furiEl.checked=furi;
-furiEl.onchange=()=>{furi=furiEl.checked;store.set('hoshi-furi',furi);
-  if(S.view==='quiz'&&S.done){const v=S.pick,q=S.list[S.i];renderQ();
-    if(q.t==='choice'){answer(v,[...app.querySelectorAll('.opt')].find(b=>b.dataset.v===v))}
-    else{const inp=document.getElementById('numIn');inp.value=v;answer(v,inp)}}
-  else render()};
-
-/* 星空の背景 */
-function sky(){const c=document.getElementById('sky'),d=window.devicePixelRatio||1,w=innerWidth,h=innerHeight;c.width=w*d;c.height=h*d;const x=c.getContext('2d');x.scale(d,d);
-  const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#0b1229');g.addColorStop(1,'#18245a');x.fillStyle=g;x.fillRect(0,0,w,h);
-  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
-  for(let i=0;i<w*h/2600;i++){const r=rnd()*1.2+.2;x.globalAlpha=rnd()*.6+.2;x.fillStyle=rnd()>.9?'#f5d98a':'#dfe4ff';x.beginPath();x.arc(rnd()*w,rnd()*h,r,0,7);x.fill()}}
-sky();addEventListener('resize',sky);
-render();
 </script>
-
-</body></html>
+</body>
+</html>
