@@ -4,113 +4,112 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>利根川クイズ</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 /* VOICE: やさしく元気な、小学生向けの復習ドリル
    IDEA: 利根川をくだる舟——1問答えるごとに源流から銚子へ進む
    PICTURE: 越後山脈から太平洋までの川の断面図と、進む舟
    COLOUR and TYPE: 川の藍 #0f4c81 を主に、水色の帯、キャベツの緑を合図色に。Zen Maru Gothic
-   LAYOUT: 上に川の帯、その下に1列の問題カード。スマホでも大きなボタン */
-:root{color-scheme:light dark;
---bg:light-dark(#ffffff,#0b1622);--ink:light-dark(#13233a,#e7eef7);--sub:light-dark(#4d5d72,#a9b8cb);
---river:light-dark(#0f4c81,#0a2e4f);--water:light-dark(#d9ecfb,#16344f);--line:light-dark(#d4dfeb,#294560);
---card:light-dark(#f4f8fc,#112539);--ok:light-dark(#2e7d32,#7fd483);--okbg:light-dark(#e6f4e6,#173a1d);
---ng:light-dark(#c62828,#ff8a80);--ngbg:light-dark(#fdeaea,#40191a);--accent:#6fb33f}
-:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
-*{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 "Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;overflow-x:clip}
-header{background:var(--river);color:#fff;padding:22px max(5vw,16px) 0}
-header h1{margin:0;font-size:clamp(26px,5vw,40px);line-height:1.15;font-weight:900;text-wrap:balance}
+   LAYOUT: 古いタブレット対応のため grid・flex の gap・新しいCSS関数を使わない */
+body{margin:0;background:#fff;color:#13233a;font-size:17px;line-height:1.7;font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;overflow-x:hidden;-webkit-text-size-adjust:100%}
+*{-webkit-box-sizing:border-box;box-sizing:border-box}
+header{background:#0f4c81;color:#fff;padding:22px 5% 0}
+header h1{margin:0;font-size:30px;line-height:1.2;font-weight:900}
 header p{margin:4px 0 0;opacity:.85;font-size:15px}
 .riv{display:block;width:100%;height:auto;margin-top:10px}
-main{max-width:760px;margin:0 auto;padding:clamp(20px,4vw,40px) max(4vw,14px) 60px}
+main{max-width:760px;margin:0 auto;padding:28px 16px 60px}
 h2{font-size:22px;margin:0 0 12px}
-.secs{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.sec{all:unset;cursor:pointer;display:block;border:2px solid var(--line);border-radius:16px;padding:16px 18px;background:var(--card)}
-.sec:focus-visible,.ch:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.sec b{display:block;font-size:19px}.sec span{font-size:14px;color:var(--sub)}
-.sec[aria-pressed=true]{border-color:var(--river);background:var(--water)}
-:root[data-theme=dark] .sec[aria-pressed=true]{border-color:#5aa0e0}
-.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center}
-.btn{all:unset;cursor:pointer;min-height:48px;padding:0 22px;display:inline-flex;align-items:center;border-radius:999px;background:var(--river);color:#fff;font-weight:700;font-size:17px}
-:root[data-theme=dark] .btn{background:#2c74b8}
-.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
-.btn[disabled]{opacity:.4;pointer-events:none}
-.meta{display:flex;justify-content:space-between;font-size:15px;color:var(--sub);margin-bottom:8px}
-.q{font-size:clamp(19px,3.2vw,23px);font-weight:700;line-height:1.55;margin:4px 0 16px}
-.tag{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--water);color:var(--ink)}
-.chs{display:grid;gap:10px}
-.ch{all:unset;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border:2px solid var(--line);border-radius:14px;background:var(--bg);min-height:24px}
-.ch i{font-style:normal;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--water);font-weight:700;font-size:15px}
-.ch.ok{border-color:var(--ok);background:var(--okbg)}.ch.ng{border-color:var(--ng);background:var(--ngbg)}
-.ch.ok i{background:var(--ok);color:#fff}.ch.ng i{background:var(--ng);color:#fff}
-.lock .ch{cursor:default}
-.fb{margin-top:16px;padding:14px 18px;border-radius:14px;background:var(--card);border-left:6px solid var(--ok)}
-.fb.ng{border-left-color:var(--ng)}.fb b{font-size:19px}
-.fig{margin:0 0 16px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-.fig figcaption{font-size:14px;font-weight:700;margin-bottom:6px}
-.fig small{display:block;color:var(--sub);font-size:13px;margin-top:4px}
-.bars{display:grid;gap:8px}.br{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;font-size:13px}
-.st{display:flex;height:30px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
-.st span{display:grid;place-items:center;white-space:nowrap;overflow:hidden;font-size:12px;border-right:1px solid var(--line);background:var(--bg)}
-.st .a{background:#b9c3cc;color:#13233a}.st .i{background:#4a5563;color:#fff;font-weight:700}
-table{border-collapse:collapse;width:100%;font-size:15px}td,th{border:1px solid var(--line);padding:5px 8px;text-align:right}th{background:var(--water)}td:first-child,th:first-child{text-align:center}
-.score{font-size:clamp(48px,12vw,80px);font-weight:900;line-height:1;color:var(--river)}
-:root[data-theme=dark] .score{color:#7cb8ef}
-.wl{padding:0;list-style:none;display:grid;gap:10px}.wl li{padding:12px 16px;border-radius:12px;background:var(--card);font-size:15px}
-.wl b{color:var(--ok)}
+button{font-family:inherit;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;cursor:pointer;margin:0}
+.sec{display:block;width:100%;text-align:left;border:2px solid #d4dfeb;border-radius:16px;padding:14px 18px;background:#f4f8fc;color:inherit;margin-bottom:12px;font-size:17px}
+.sec b{display:block;font-size:19px}.sec span{font-size:14px;color:#4d5d72}
+.sec.on{border-color:#0f4c81;background:#d9ecfb}
+.sec .ck{float:right;font-weight:700;color:#0f4c81}
+.row{margin-top:14px}
+.btn{display:inline-block;min-height:48px;padding:10px 22px;border-radius:999px;border:2px solid #0f4c81;background:#0f4c81;color:#fff;font-weight:700;font-size:17px;margin:0 8px 10px 0}
+.btn.ghost{background:transparent;color:#13233a;border-color:#d4dfeb}
+.btn.off{opacity:.4}
+.meta{overflow:hidden;font-size:15px;color:#4d5d72;margin-bottom:8px}.meta .r{float:right}
+.q{font-size:21px;font-weight:700;line-height:1.55;margin:4px 0 16px}
+.tag{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:#d9ecfb}
+.ch{display:block;width:100%;text-align:left;position:relative;padding:13px 16px 13px 54px;border:2px solid #d4dfeb;border-radius:14px;background:#fff;color:inherit;font-size:17px;line-height:1.5;margin-bottom:10px}
+.ch i{font-style:normal;position:absolute;left:14px;top:12px;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;background:#d9ecfb;font-weight:700;font-size:15px}
+.ch.ok{border-color:#2e7d32;background:#e6f4e6}.ch.ng{border-color:#c62828;background:#fdeaea}
+.ch.ok i{background:#2e7d32;color:#fff}.ch.ng i{background:#c62828;color:#fff}
+.fb{margin-top:6px;padding:14px 18px;border-radius:14px;background:#f4f8fc;border-left:6px solid #2e7d32}
+.fb.ng{border-left-color:#c62828}.fb b{font-size:19px}
+.fig{margin:0 0 16px;padding:12px;border:1px solid #d4dfeb;border-radius:14px;background:#f4f8fc}
+.fig .cap{font-size:14px;font-weight:700;margin-bottom:6px}
+.fig small{display:block;color:#4d5d72;font-size:13px;margin-top:4px}
+.br{overflow:hidden;margin-bottom:8px;font-size:13px}
+.br .lb{float:left;width:64px;line-height:30px}
+.st{margin-left:70px;height:30px;border-radius:6px;overflow:hidden;border:1px solid #d4dfeb;white-space:nowrap;font-size:0;background:#fff}
+.st span{display:inline-block;height:28px;line-height:28px;text-align:center;overflow:hidden;font-size:12px;border-right:1px solid #d4dfeb;vertical-align:top}
+.st .a{background:#b9c3cc}.st .i{background:#4a5563;color:#fff;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:15px}td,th{border:1px solid #d4dfeb;padding:5px 8px;text-align:right}th{background:#d9ecfb}td:first-child,th:first-child{text-align:center}
+.score{font-size:64px;font-weight:900;line-height:1;color:#0f4c81}
+.wl{padding:0;list-style:none}.wl li{padding:12px 16px;border-radius:12px;background:#f4f8fc;font-size:15px;margin-bottom:10px}
+.wl b{color:#2e7d32}
 .hide{display:none}
-@media (prefers-reduced-motion:reduce){#boat{transition:none!important}}
+@media (min-width:640px){header h1{font-size:38px}.q{font-size:23px}.sec{display:inline-block;vertical-align:top;width:31.5%;margin-right:1.5%;min-height:120px}}
+@media (prefers-color-scheme:dark){
+body{background:#0b1622;color:#e7eef7}
+.sec,.fig,.fb,.wl li{background:#112539;border-color:#294560}.sec span,.meta,.fig small{color:#a9b8cb}
+.sec.on{background:#16344f;border-color:#5aa0e0}.sec .ck{color:#7cb8ef}
+.ch{background:#0b1622;border-color:#294560}.ch i,.tag,th{background:#16344f}
+.ch.ok{background:#173a1d}.ch.ng{background:#40191a}
+.btn{background:#2c74b8;border-color:#2c74b8}.btn.ghost{background:transparent;color:#e7eef7;border-color:#294560}
+td,th,.st,.st span{border-color:#294560}.st{background:#0b1622}.st .a{color:#13233a}
+.score{color:#7cb8ef}header{background:#0a2e4f}}
 </style>
 </head>
 <body>
 <header>
 <h1>利根川クイズ 〜関東平野をうるおす川〜</h1>
 <p>第6回「特色ある地域の自然とくらし」の復習 ・ ぜんぶ選ぶだけの問題です</p>
-<svg class="riv" viewBox="0 0 800 120" role="img" aria-label="進みぐあい：利根川を源流から銚子までくだる舟">
+<svg class="riv" viewBox="0 0 800 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="進みぐあい">
 <path d="M0 120 L0 40 L40 10 L80 38 L110 18 L150 52 L190 70 L800 78 L800 120Z" fill="#0b3a63"/>
 <path d="M0 120 L0 60 L60 34 L120 62 L800 92 L800 120Z" fill="#6fb33f" opacity=".55"/>
 <path d="M720 120 L720 86 Q760 80 800 84 L800 120Z" fill="#5fa8e8"/>
 <path id="rp" d="M50 30 C100 60 150 80 230 90 S420 100 520 98 S680 96 740 92" fill="none" stroke="#9fd0ff" stroke-width="7" stroke-linecap="round"/>
 <text x="8" y="112" fill="#fff" font-size="13">越後山脈（源流）</text>
 <text x="700" y="114" fill="#fff" font-size="13" text-anchor="end">銚子 → 太平洋</text>
-<g id="boat" style="transition:transform .6s ease"><path d="M-12 -4 L12 -4 L7 4 L-7 4Z" fill="#fff"/><path d="M0 -4 L0 -20 L10 -6Z" fill="#ffd34d"/></g>
+<g id="boat"><path d="M-12 -4 L12 -4 L7 4 L-7 4Z" fill="#fff"/><path d="M0 -4 L0 -20 L10 -6Z" fill="#ffd34d"/></g>
 </svg>
 </header>
 <main>
-<section id="home">
+<div id="home">
 <h2>どこを復習する？</h2>
-<div class="secs" id="secs"></div>
-<div class="row"><button class="btn" id="start">スタート</button><button class="btn ghost hide" id="retryWrong">前にまちがえた問題だけ</button></div>
-<p style="font-size:14px;color:var(--sub)">問題の順番と選択肢の順番は毎回入れかわります。</p>
-</section>
-<section id="quiz" class="hide">
-<div class="meta"><span id="pos"></span><span id="pt"></span></div>
+<div id="secs"></div>
+<div class="row"><button class="btn" id="start" type="button">スタート</button><button class="btn ghost hide" id="retryWrong" type="button">前にまちがえた問題だけ</button></div>
+<p style="font-size:14px;color:#6b7b90">問題の順番と選択肢の順番は毎回入れかわります。</p>
+</div>
+<div id="quiz" class="hide">
+<div class="meta"><span id="pos"></span><span class="r" id="pt"></span></div>
 <span class="tag" id="qsec"></span>
 <p class="q" id="qt"></p>
 <div id="fig"></div>
-<div class="chs" id="chs"></div>
+<div id="chs"></div>
 <div id="fb"></div>
-<div class="row"><button class="btn hide" id="next">つぎへ</button><button class="btn ghost" id="quit">やめる</button></div>
-</section>
-<section id="res" class="hide">
+<div class="row"><button class="btn hide" id="next" type="button">つぎへ</button><button class="btn ghost" id="quit" type="button">やめる</button></div>
+</div>
+<div id="res" class="hide">
 <h2>けっか</h2>
 <div class="score" id="sc"></div>
 <p id="cm"></p>
-<div class="row"><button class="btn" id="again">もう一度</button><button class="btn ghost" id="wrongOnly">まちがえた問題をやり直す</button><button class="btn ghost" id="home2">はじめにもどる</button></div>
+<div class="row"><button class="btn" id="again" type="button">もう一度</button><button class="btn ghost" id="wrongOnly" type="button">まちがえた問題をやり直す</button><button class="btn ghost" id="home2" type="button">はじめにもどる</button></div>
 <h2 style="margin-top:28px" id="wh">まちがえた問題</h2>
 <ul class="wl" id="wl"></ul>
-</section>
+</div>
 </main>
 <script>
-{
-const SECS=[
+(function(){
+// 古いブラウザ対応：ES5 のみ（const/let・アロー関数・テンプレート文字列・Set などを使わない）
+var SECS=[
  {id:'a',name:'利根川の流れ',d:'源流・県境・流域面積・関東の都県'},
  {id:'b',name:'上流と下流の農業',d:'米づくり・嬬恋村のキャベツ・グラフ'},
  {id:'c',name:'東京の発展と川の工事',d:'人口・徳川家康・流れを変える工事・ダム'}];
 // c[0] が正解。表示のときにシャッフルする
-const Q=[
+var RAW=[
 ['a','利根川の源流部（川が流れ出すところ）がある山脈はどれ？',['越後山脈','奥羽山脈','飛驒山脈','赤石山脈'],'利根川の本流は、群馬県と新潟県の県境にある越後山脈から流れ出しています。'],
 ['a','群馬県・埼玉県・長野県の県境にあり、支流の神流川が流れ出す山地はどれ？',['関東山地','中国山地','紀伊山地','九州山地'],'支流の中には、関東山地から流れ出すもの（神流川など）があります。'],
 ['a','利根川が「日本で最大」であることで知られているのはどれ？',['流域面積','川の長さ','河口の幅','流れの速さ'],'利根川は流域面積が日本でいちばん広い川です。長さは日本で2番目です。'],
@@ -156,83 +155,129 @@ const Q=[
 ['c','利根川の流れを変えたことで、洪水をふせぐほかに何がもたらされた？',['利根川を利用する水運と、周辺の都市の発達','鉄道と空港の建設','大きな工業地帯と港','山の森林がふえたこと'],'舟で物を運ぶ水運がさかんになり、川沿いの都市が発達しました。'],
 ['c','洪水を防ぐために、いま利根川の上流に多く建設されているものは？',['ダム','灯台','運河','防波堤'],'上流に多くのダムがつくられ、川の水の流量を調節しています。'],
 ['c','利根川のダムの役割として正しいものはどれ？',['洪水を防ぐだけでなく、首都圏に安定した水を供給している','船が通る道をつくるためだけにある','川の魚をふやすためだけにある','海水が川に入るのを防いでいる'],'ダムは洪水を防ぐほか、人々の生活が水不足でこまらないように、関東各地へ水を送る役目もあります。']
-].map((r,i)=>({id:i,s:r[0],q:r[1],c:r[2],e:r[3],f:r[4]}));
+];
+var Q=[];
+for(var n=0;n<RAW.length;n++){var r=RAW[n];Q.push({id:n,s:r[0],q:r[1],c:r[2],e:r[3],f:r[4]||''});}
 
-const T={ // 月別平均気温（教材グラフからの読みとり目安）
+function $(id){return document.getElementById(id);}
+function each(a,fn){for(var i=0;i<a.length;i++)fn(a[i],i);}
+function map(a,fn){var o=[];for(var i=0;i<a.length;i++)o.push(fn(a[i],i));return o;}
+function filter(a,fn){var o=[];for(var i=0;i<a.length;i++)if(fn(a[i],i))o.push(a[i]);return o;}
+function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function hasCls(el,c){return (' '+el.className+' ').indexOf(' '+c+' ')>-1;}
+function addCls(el,c){if(!hasCls(el,c))el.className=(el.className+' '+c).replace(/^\s+/,'');}
+function rmCls(el,c){el.className=(' '+el.className+' ').replace(' '+c+' ',' ').replace(/^\s+|\s+$/g,'');}
+function tog(el,c,on){if(on)addCls(el,c);else rmCls(el,c);}
+function on(el,ev,fn){el.addEventListener(ev,fn,false);}
+function closest(el,cls,stop){while(el&&el!==stop){if(el.className&&typeof el.className==='string'&&hasCls(el,cls))return el;el=el.parentNode;}return null;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+var T={ // 月別平均気温（教材グラフからの読みとり目安）
  tsu:[-5,-4.5,-0.5,5.5,11,15.5,19.5,20,16,10,4.5,-1],
  cho:[6.5,7,9.5,14,17.5,20.5,23.5,25.5,23,18.5,14,10],
  atu:[6,6.5,9.5,14.5,19,22.5,26,27.5,24.5,19.5,14.5,9.5]};
 function climate(a,an,cap){
- const x=m=>40+m*30,y=t=>170-(t+10)*4.2;
- const line=(d,col)=>`<polyline fill="none" stroke="${col}" stroke-width="2.5" points="${d.map((t,m)=>x(m)+','+y(t)).join(' ')}"/>`+d.map((t,m)=>`<circle cx="${x(m)}" cy="${y(t)}" r="3" fill="${col}"/>`).join('');
- const grid=[-10,0,10,20,30].map(t=>`<line x1="34" x2="376" y1="${y(t)}" y2="${y(t)}" stroke="currentColor" opacity=".2"/><text x="28" y="${y(t)+4}" font-size="11" text-anchor="end" fill="currentColor">${t}</text>`).join('');
- const mon=T.tsu.map((_,m)=>`<text x="${x(m)}" y="186" font-size="11" text-anchor="middle" fill="currentColor">${m+1}</text>`).join('');
- return `<figure class="fig"><figcaption>${cap}</figcaption><svg viewBox="0 0 390 196" width="100%" style="max-width:520px;display:block">${grid}${mon}${line(T[a],'#e07b1a')}${line(T.tsu,'#1f6fb2')}
- <text x="${x(5)}" y="${y(T[a][5])-10}" font-size="12" fill="#e07b1a" font-weight="700">${an}</text><text x="${x(4)+6}" y="${y(T.tsu[4])+18}" font-size="12" fill="#1f6fb2" font-weight="700">嬬恋村</text></svg><small>（℃・月）教材のグラフから読みとった目安</small></figure>`}
-const CAB=[['1〜3月',[['愛知',57],['千葉',22,'a'],['神奈川',15],['他',6]]],['4〜6月',[['千葉',32,'a'],['神奈川',23],['愛知',20],['茨城',13],['群馬',7,'i'],['他',5]]],['7〜9月',[['群馬',76,'i'],['岩手',14],['長野',6],['茨城',2],['千葉',1,'a'],['他',1]]],['10〜12月',[['群馬',32,'i'],['千葉',20,'a'],['愛知',17],['茨城',15],['他',16]]]];
-function cab(hide){
- return `<figure class="fig"><figcaption>${hide?'グラフ3':'グラフ'}　東京に入荷されるキャベツの3か月ごとの内訳（2024年）</figcaption><div class="bars">${CAB.map(([p,rs])=>`<div class="br"><span>${p}</span><div class="st">${rs.map(([n,v,k])=>`<span class="${hide&&k?k:''}" style="width:${v}%" title="${n}${v}%">${v>=6?(hide&&k?(k=='a'?'ア':'イ')+' '+v+'%':n+v):''}</span>`).join('')}</div></div>`).join('')}</div><small>帯の長さは割合（％）。東京都中央卸売市場の資料による${hide?'。ア＝うすい灰色、イ＝こい灰色':''}</small></figure>`}
-const FIG={
- rivers:()=>`<figure class="fig"><figcaption>日本の主な川の長さと流域面積（『理科年表2026』による）</figcaption><table><tr><th></th><th>長さ（km）</th><th>流域面積（km²）</th></tr>${[['ア',367,11900],['イ',322,16840],['ウ',268,14330],['エ',256,5590],['オ',249,10150]].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2].toLocaleString()}</td></tr>`).join('')}</table></figure>`,
- cab:()=>cab(false),cab3:()=>cab(true),
- atsumi:()=>climate('atu','渥美半島','グラフ　渥美半島と嬬恋村の月別平均気温'),
- choshi:()=>climate('cho','銚子','グラフ2　銚子と嬬恋村の気温')};
-
-const $=id=>document.getElementById(id);
-const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const store={get(){try{return JSON.parse(localStorage.getItem('tone-wrong')||'[]')}catch(e){return[]}},set(v){try{localStorage.setItem('tone-wrong',JSON.stringify(v))}catch(e){}}};
-let sel=new Set(SECS.map(s=>s.id)),list=[],cur=0,pts=0,wrong=[];
-const LET='アイウエ';
-
-$('secs').innerHTML=SECS.map(s=>`<button class="sec" data-s="${s.id}" aria-pressed="true"><b>${s.name}</b><span>${s.d}（${Q.filter(q=>q.s==s.id).length}問）</span></button>`).join('');
-$('secs').addEventListener('click',e=>{const b=e.target.closest('.sec');if(!b)return;const s=b.dataset.s;sel.has(s)?sel.delete(s):sel.add(s);b.setAttribute('aria-pressed',sel.has(s));$('start').disabled=!sel.size;$('start').toggleAttribute('disabled',!sel.size)});
-function boat(f){const p=$('rp'),L=p.getTotalLength(),pt=p.getPointAtLength(L*f);$('boat').setAttribute('transform',`translate(${pt.x} ${pt.y-2})`)}
-function show(id){for(const s of['home','quiz','res'])$(s).classList.toggle('hide',s!=id);window.scrollTo(0,0)}
-function refreshHome(){const w=store.get();$('retryWrong').classList.toggle('hide',!w.length);$('retryWrong').textContent=`前にまちがえた問題だけ（${w.length}問）`;boat(0)}
-function begin(qs){list=shuf(qs).map(q=>({...q,o:shuf(q.c)}));cur=0;pts=0;wrong=[];show('quiz');render()}
-function render(){
- const q=list[cur];
- $('pos').textContent=`${cur+1} / ${list.length} 問`;$('pt').textContent=`正解 ${pts}`;
- $('qsec').textContent=SECS.find(s=>s.id==q.s).name;$('qt').textContent=q.q;
- $('fig').innerHTML=q.f?FIG[q.f]():'';
- $('chs').className='chs';
- $('chs').innerHTML=q.o.map((c,i)=>`<button class="ch" data-i="${i}"><i>${LET[i]}</i><span>${c}</span></button>`).join('');
- $('fb').innerHTML='';$('next').classList.add('hide');boat(cur/list.length);
+ function x(m){return 40+m*30;} function y(t){return 170-(t+10)*4.2;}
+ function line(d,col){
+  var pts=map(d,function(t,m){return x(m)+','+y(t);}).join(' ');
+  return '<polyline fill="none" stroke="'+col+'" stroke-width="2.5" points="'+pts+'"/>'+map(d,function(t,m){return '<circle cx="'+x(m)+'" cy="'+y(t)+'" r="3" fill="'+col+'"/>';}).join('');
+ }
+ var grid=map([-10,0,10,20,30],function(t){return '<line x1="34" x2="376" y1="'+y(t)+'" y2="'+y(t)+'" stroke="#8a9bb0" stroke-opacity=".4"/><text x="28" y="'+(y(t)+4)+'" font-size="11" text-anchor="end" fill="#6b7b90">'+t+'</text>';}).join('');
+ var mon=map(T.tsu,function(_,m){return '<text x="'+x(m)+'" y="186" font-size="11" text-anchor="middle" fill="#6b7b90">'+(m+1)+'</text>';}).join('');
+ return '<div class="fig"><div class="cap">'+cap+'</div><svg viewBox="0 0 390 196" width="100%" style="max-width:520px;display:block">'+grid+mon+line(T[a],'#e07b1a')+line(T.tsu,'#1f6fb2')+
+ '<text x="'+x(5)+'" y="'+(y(T[a][5])-10)+'" font-size="12" fill="#e07b1a" font-weight="700">'+an+'</text><text x="'+(x(4)+6)+'" y="'+(y(T.tsu[4])+18)+'" font-size="12" fill="#1f6fb2" font-weight="700">嬬恋村</text></svg><small>（℃・月）教材のグラフから読みとった目安</small></div>';
 }
-$('chs').addEventListener('click',e=>{
- const b=e.target.closest('.ch');if(!b||$('chs').classList.contains('lock'))return;
- const q=list[cur],pick=q.o[+b.dataset.i],ok=pick===q.c[0];
- $('chs').classList.add('lock');
- [...$('chs').children].forEach((el,i)=>{if(q.o[i]===q.c[0])el.classList.add('ok');else if(el===b)el.classList.add('ng')});
+var CAB=[['1〜3月',[['愛知',57],['千葉',22,'a'],['神奈川',15],['他',6]]],['4〜6月',[['千葉',32,'a'],['神奈川',23],['愛知',20],['茨城',13],['群馬',7,'i'],['他',5]]],['7〜9月',[['群馬',76,'i'],['岩手',14],['長野',6],['茨城',2],['千葉',1,'a'],['他',1]]],['10〜12月',[['群馬',32,'i'],['千葉',20,'a'],['愛知',17],['茨城',15],['他',16]]]];
+function cab(hide){
+ var rows=map(CAB,function(p){
+  var parts=map(p[1],function(r){
+   var n=r[0],v=r[1],k=r[2]||'';
+   var txt=v>=6?(hide&&k?(k==='a'?'ア':'イ')+' '+v+'%':n+v):'';
+   return '<span class="'+(hide?k:'')+'" style="width:'+v+'%">'+txt+'</span>';
+  }).join('');
+  return '<div class="br"><span class="lb">'+p[0]+'</span><div class="st">'+parts+'</div></div>';
+ }).join('');
+ return '<div class="fig"><div class="cap">'+(hide?'グラフ3':'グラフ')+'　東京に入荷されるキャベツの3か月ごとの内訳（2024年）</div>'+rows+'<small>帯の長さは割合（％）。東京都中央卸売市場の資料による'+(hide?'。ア＝うすい灰色、イ＝こい灰色':'')+'</small></div>';
+}
+var FIG={
+ rivers:function(){return '<div class="fig"><div class="cap">日本の主な川の長さと流域面積（『理科年表2026』による）</div><table><tr><th></th><th>長さ（km）</th><th>流域面積（km²）</th></tr>'+map([['ア',367,'11,900'],['イ',322,'16,840'],['ウ',268,'14,330'],['エ',256,'5,590'],['オ',249,'10,150']],function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';}).join('')+'</table></div>';},
+ cab:function(){return cab(false);},cab3:function(){return cab(true);},
+ atsumi:function(){return climate('atu','渥美半島','グラフ　渥美半島と嬬恋村の月別平均気温');},
+ choshi:function(){return climate('cho','銚子','グラフ2　銚子と嬬恋村の気温');}};
+
+var store={
+ get:function(){try{var v=JSON.parse(window.localStorage.getItem('tone-wrong')||'[]');return v instanceof Array?v:[];}catch(e){return [];}},
+ set:function(v){try{window.localStorage.setItem('tone-wrong',JSON.stringify(v));}catch(e){}}};
+function inArr(a,v){for(var i=0;i<a.length;i++)if(a[i]===v)return true;return false;}
+
+var sel={a:true,b:true,c:true},list=[],cur=0,pts=0,wrong=[],timer=null,left=0,locked=false;
+var LET='アイウエ';
+
+function drawSecs(){
+ $('secs').innerHTML=map(SECS,function(s){
+  var cnt=filter(Q,function(q){return q.s===s.id;}).length;
+  return '<button type="button" class="sec'+(sel[s.id]?' on':'')+'" data-s="'+s.id+'"><span class="ck">'+(sel[s.id]?'✓':'')+'</span><b>'+s.name+'</b><span>'+s.d+'（'+cnt+'問）</span></button>';
+ }).join('');
+ tog($('start'),'off',!(sel.a||sel.b||sel.c));
+}
+on($('secs'),'click',function(e){var b=closest(e.target,'sec',this);if(!b)return;var s=b.getAttribute('data-s');sel[s]=!sel[s];drawSecs();});
+
+function boat(f){
+ var b=$('boat');
+ try{var p=$('rp'),L=p.getTotalLength(),pt=p.getPointAtLength(L*f);b.setAttribute('transform','translate('+pt.x+' '+(pt.y-2)+')');}
+ catch(e){b.setAttribute('transform','translate('+(50+690*f)+' '+(30+62*Math.sqrt(f))+')');}
+}
+function show(id){each(['home','quiz','res'],function(s){tog($(s),'hide',s!==id);});window.scrollTo(0,0);}
+function refreshHome(){var w=store.get();tog($('retryWrong'),'hide',!w.length);$('retryWrong').innerHTML='前にまちがえた問題だけ（'+w.length+'問）';boat(0);}
+function begin(qs){
+ stop();
+ list=map(shuf(qs),function(q){return {id:q.id,s:q.s,q:q.q,c:q.c,e:q.e,f:q.f,o:shuf(q.c)};});
+ cur=0;pts=0;wrong=[];show('quiz');render();
+}
+function secName(id){for(var i=0;i<SECS.length;i++)if(SECS[i].id===id)return SECS[i].name;return '';}
+function render(){
+ var q=list[cur];locked=false;
+ $('pos').innerHTML=(cur+1)+' / '+list.length+' 問';$('pt').innerHTML='正解 '+pts;
+ $('qsec').innerHTML=secName(q.s);$('qt').innerHTML=esc(q.q);
+ $('fig').innerHTML=q.f?FIG[q.f]():'';
+ $('chs').innerHTML=map(q.o,function(c,i){return '<button type="button" class="ch" data-i="'+i+'"><i>'+LET.charAt(i)+'</i>'+esc(c)+'</button>';}).join('');
+ $('fb').innerHTML='';addCls($('next'),'hide');boat(cur/list.length);
+}
+function nextLabel(){$('next').innerHTML=(cur+1<list.length?'つぎへ':'けっかを見る')+'（'+left+'）';}
+on($('chs'),'click',function(e){
+ var b=closest(e.target,'ch',this);if(!b||locked)return;locked=true;
+ var q=list[cur],pick=q.o[+b.getAttribute('data-i')],ok=pick===q.c[0];
+ var kids=$('chs').getElementsByTagName('button');
+ each(kids,function(el,i){if(q.o[i]===q.c[0])addCls(el,'ok');else if(el===b)addCls(el,'ng');});
  if(ok)pts++;else wrong.push(q);
- $('fb').innerHTML=`<div class="fb ${ok?'':'ng'}"><b>${ok?'正解！':'ざんねん…'}</b>${ok?'':`　正しい答えは「${q.c[0]}」`}<br>${q.e}</div>`;
- $('pt').textContent=`正解 ${pts}`;$('next').classList.remove('hide');
- let left=3;const lab=()=>$('next').textContent=`${cur+1<list.length?'つぎへ':'けっかを見る'}（${left}）`;lab();
- timer=setInterval(()=>{left--;if(left<=0)advance();else lab()},1000);
+ $('fb').innerHTML='<div class="fb'+(ok?'':' ng')+'"><b>'+(ok?'正解！':'ざんねん…')+'</b>'+(ok?'':'　正しい答えは「'+esc(q.c[0])+'」')+'<br>'+esc(q.e)+'</div>';
+ $('pt').innerHTML='正解 '+pts;rmCls($('next'),'hide');
+ left=3;nextLabel();
+ timer=setInterval(function(){left--;if(left<=0)advance();else nextLabel();},1000);
 });
-let timer=null;
-function stop(){clearInterval(timer);timer=null}
-function advance(){stop();cur++;if(cur<list.length)render();else finish()}
-$('next').addEventListener('click',advance);
+function stop(){if(timer){clearInterval(timer);timer=null;}}
+function advance(){stop();cur++;if(cur<list.length)render();else finish();}
+on($('next'),'click',advance);
 function finish(){
  boat(1);show('res');
- const r=pts/list.length;
- $('sc').textContent=`${pts} / ${list.length}`;
- $('cm').textContent=r==1?'全問正解！ 銚子まで無事にたどりついたね。':r>=.8?'よくできました！ あと少しで全問正解。':r>=.5?'半分以上できたよ。まちがえた問題をもう一度やってみよう。':'まちがえた問題の説明を読んで、もう一度チャレンジ！';
- // 今回の結果で「前にまちがえた問題」を更新：正解したものは外し、まちがえたものを足す
- const done=new Set(list.map(q=>q.id)),keep=store.get().filter(id=>!done.has(id));
- store.set([...keep,...wrong.map(q=>q.id)]);
- $('wh').classList.toggle('hide',!wrong.length);$('wrongOnly').classList.toggle('hide',!wrong.length);
- $('wl').innerHTML=wrong.map(q=>`<li>${q.q}<br>答え：<b>${q.c[0]}</b></li>`).join('');
+ var r=pts/list.length;
+ $('sc').innerHTML=pts+' / '+list.length;
+ $('cm').innerHTML=r===1?'全問正解！ 銚子まで無事にたどりついたね。':r>=0.8?'よくできました！ あと少しで全問正解。':r>=0.5?'半分以上できたよ。まちがえた問題をもう一度やってみよう。':'まちがえた問題の説明を読んで、もう一度チャレンジ！';
+ // 今回出した問題は記録をいったん外し、まちがえたものだけ足す
+ var done=map(list,function(q){return q.id;});
+ var keep=filter(store.get(),function(id){return !inArr(done,id);});
+ store.set(keep.concat(map(wrong,function(q){return q.id;})));
+ tog($('wh'),'hide',!wrong.length);tog($('wrongOnly'),'hide',!wrong.length);
+ $('wl').innerHTML=map(wrong,function(q){return '<li>'+esc(q.q)+'<br>答え：<b>'+esc(q.c[0])+'</b></li>';}).join('');
 }
-$('start').addEventListener('click',()=>begin(Q.filter(q=>sel.has(q.s))));
-$('retryWrong').addEventListener('click',()=>{const w=new Set(store.get());const qs=Q.filter(q=>w.has(q.id));if(qs.length)begin(qs)});
-$('again').addEventListener('click',()=>begin(list));
-$('wrongOnly').addEventListener('click',()=>begin(wrong));
-$('home2').addEventListener('click',()=>{refreshHome();show('home')});
-$('quit').addEventListener('click',()=>{stop();refreshHome();show('home')});
-refreshHome();
-}
+on($('start'),'click',function(){if(!(sel.a||sel.b||sel.c))return;begin(filter(Q,function(q){return sel[q.s];}));});
+on($('retryWrong'),'click',function(){var w=store.get();var qs=filter(Q,function(q){return inArr(w,q.id);});if(qs.length)begin(qs);});
+on($('again'),'click',function(){begin(list);});
+on($('wrongOnly'),'click',function(){begin(wrong);});
+on($('home2'),'click',function(){refreshHome();show('home');});
+on($('quit'),'click',function(){stop();refreshHome();show('home');});
+drawSecs();refreshHome();
+})();
 </script>
 </body>
 </html>
