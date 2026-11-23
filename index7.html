@@ -2,292 +2,409 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>満ち欠けする月クイズ</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 /* VOICE: やさしく元気な理科ドリル。小学生がひとりで進められる。
    IDEA: 夜空に浮かぶ「観察カード」。1問ずつ月の図を見て答える。
    PICTURE: 問題ごとの月の図（形・公転・空の通り道）を大きく。
    COLOUR and TYPE: 夜の藍 #101a33、月のクリーム #f6e7a8、正解ミント・不正解サンゴ。Zen Maru Gothic。
-   LAYOUT: 1カラム。上に進み具合、まん中に図と問題、下に選択肢。 */
-:root{color-scheme:dark;--bg:#101a33;--card:#18254a;--line:#2b3b6b;--ink:#eef1fb;--sub:#a9b3d6;--moon:#f6e7a8;--dark:#38456e;--ok:#4fd1a5;--ng:#ff7a6b}
-:root[data-theme=light],:root[data-theme=dark]{color-scheme:dark}
-*{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg) radial-gradient(1200px 500px at 80% -10%,#1d2c5a 0,transparent 70%);color:var(--ink);font:17px/1.6 "Zen Maru Gothic",system-ui,sans-serif;min-height:100vh;overflow-x:clip}
-.wrap{max-width:720px;margin:0 auto;padding:clamp(18px,4vw,40px) max(4vw,16px) 48px}
-h1{font-size:clamp(28px,6vw,42px);line-height:1.1;margin:0 0 6px;text-wrap:balance;font-weight:900}
-.lead{color:var(--sub);margin:0 0 22px}
-.hero{display:flex;gap:10px;margin:18px 0 26px;flex-wrap:wrap}
-.hero svg{width:clamp(46px,12vw,64px);height:auto}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 20px}
-.chip{border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:9px 16px;font:inherit;font-size:15px;cursor:pointer;min-height:44px}
-.chip[aria-pressed=true]{background:var(--moon);color:#1a1a2e;border-color:var(--moon);font-weight:700}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:14px 26px;font:inherit;font-weight:700;font-size:18px;background:var(--moon);color:#1a1a2e;cursor:pointer;min-height:52px}
-.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
-button:focus-visible{outline:3px solid #8fd3ff;outline-offset:2px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:15px;color:var(--sub);margin-bottom:8px}
-.prog{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:18px}
-.prog i{display:block;height:100%;background:var(--moon);transition:width .3s}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:clamp(16px,3.5vw,28px)}
-.cat{display:inline-block;font-size:13px;color:var(--moon);border:1px solid var(--moon);border-radius:999px;padding:1px 10px;margin-bottom:10px}
-.q{font-size:clamp(18px,4.2vw,22px);font-weight:700;margin:0 0 14px;line-height:1.5}
-.fig{display:flex;justify-content:center;margin:4px 0 16px}
-.fig svg{width:100%;max-width:340px;height:auto}
-.fig.wide svg{max-width:460px}
-.ch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.ch.one{grid-template-columns:minmax(0,1fr)}
-.opt{display:flex;align-items:center;gap:10px;text-align:left;border:2px solid var(--line);background:#121d3c;color:var(--ink);border-radius:14px;padding:12px 14px;font:inherit;font-size:16px;cursor:pointer;min-height:56px;transition:transform .1s,border-color .2s,background .2s}
-.opt:hover:not(:disabled){border-color:var(--moon)}
-.opt:active:not(:disabled){transform:scale(.98)}
-.opt .k{flex:none;width:28px;height:28px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:14px;font-weight:700}
-.opt svg{flex:none;width:48px;height:48px}
-.opt.ok{border-color:var(--ok);background:#123d3a}
-.opt.ng{border-color:var(--ng);background:#3e1f2a}
-.opt:disabled{cursor:default}
-.opt.dim{opacity:.45}
-.fb{margin-top:16px;border-radius:14px;padding:14px 16px;display:none}
+   LAYOUT: 1カラム。上に進み具合、まん中に図と問題、下に選択肢。
+   古いブラウザ対応：CSS変数・grid・gap・clamp()は使わない */
+*{-webkit-box-sizing:border-box;box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#101a33;color:#eef1fb;font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;font-size:17px;line-height:1.6;min-height:100%;overflow-x:hidden}
+.wrap{max-width:720px;margin:0 auto;padding:32px 16px 48px}
+h1{font-size:38px;line-height:1.15;margin:0 0 6px;font-weight:900}
+.lead{color:#a9b3d6;margin:0 0 22px}
+.hero{margin:18px 0 26px}
+.hero svg{width:60px;height:60px;margin-right:8px;vertical-align:middle}
+.chips{margin:8px 0 20px}
+.chip{display:inline-block;border:2px solid #2b3b6b;background:transparent;color:#eef1fb;border-radius:999px;padding:9px 16px;font-family:inherit;font-size:15px;cursor:pointer;min-height:44px;margin:0 8px 8px 0}
+.chip.on{background:#f6e7a8;color:#1a1a2e;border-color:#f6e7a8;font-weight:700}
+.btn{display:inline-block;border:2px solid #f6e7a8;border-radius:14px;padding:12px 24px;font-family:inherit;font-weight:700;font-size:18px;background:#f6e7a8;color:#1a1a2e;cursor:pointer;min-height:52px;margin:0 10px 10px 0}
+.btn.ghost{background:transparent;color:#eef1fb;border-color:#2b3b6b}
+button:focus{outline:3px solid #8fd3ff}
+.top{overflow:hidden;font-size:15px;color:#a9b3d6;margin-bottom:8px;line-height:40px}
+.top .l{float:left;margin-right:16px}
+.top .r{float:right}
+.prog{height:8px;background:#2b3b6b;border-radius:9px;overflow:hidden;margin-bottom:18px}
+.prog i{display:block;height:100%;background:#f6e7a8}
+.card{background:#18254a;border:1px solid #2b3b6b;border-radius:20px;padding:22px}
+.cat{display:inline-block;font-size:13px;color:#f6e7a8;border:1px solid #f6e7a8;border-radius:999px;padding:1px 10px;margin-bottom:10px}
+.q{font-size:21px;font-weight:700;margin:0 0 14px;line-height:1.5}
+.fig{text-align:center;margin:4px 0 16px}
+.fig svg{width:100%;max-width:340px;height:240px}
+.fig.small svg{max-width:140px;height:140px}
+.fig.sky svg{max-width:460px;height:auto}
+.ch{overflow:hidden;margin:0 -5px}
+.opt{display:block;float:left;width:50%;padding:0 5px;margin:0 0 10px}
+.ch.one .opt{float:none;width:100%}
+.opt button{display:block;width:100%;text-align:left;border:2px solid #2b3b6b;background:#121d3c;color:#eef1fb;border-radius:14px;padding:10px 12px;font-family:inherit;font-size:16px;line-height:1.45;cursor:pointer;min-height:58px}
+.opt button:hover{border-color:#f6e7a8}
+.opt .k{display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;background:#2b3b6b;font-size:14px;font-weight:700;margin-right:8px;vertical-align:middle}
+.opt svg{width:44px;height:44px;vertical-align:middle;margin-right:8px}
+.opt .t{vertical-align:middle}
+.opt button.ok{border-color:#4fd1a5;background:#123d3a}
+.opt button.ng{border-color:#ff7a6b;background:#3e1f2a}
+.opt button.dim{opacity:.45;filter:alpha(opacity=45)}
+.opt button[disabled]{cursor:default;color:#eef1fb}
+.fb{margin-top:6px;border-radius:14px;padding:14px 16px;display:none}
 .fb.show{display:block}
-.fb.ok{background:#123d3a;border:1px solid var(--ok)}
-.fb.ng{background:#3e1f2a;border:1px solid var(--ng)}
+.fb.ok{background:#123d3a;border:1px solid #4fd1a5}
+.fb.ng{background:#3e1f2a;border:1px solid #ff7a6b}
 .fb b{font-size:20px}
 .fb p{margin:6px 0 10px}
-.timer{height:6px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden}
-.timer i{display:block;height:100%;width:100%;background:var(--ink)}
-.timer.run i{animation:shrink 3s linear forwards}
-@keyframes shrink{to{width:0}}
-.skip{background:none;border:0;color:var(--sub);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:8px 0;min-height:40px}
-.score{font-size:clamp(52px,14vw,88px);font-weight:900;line-height:1;color:var(--moon)}
+.timer{height:6px;border-radius:6px;background:#4a5577;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:#eef1fb}
+.skip{background:none;border:0;color:#a9b3d6;font-family:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:8px 0;min-height:40px}
+.score{font-size:76px;font-weight:900;line-height:1;color:#f6e7a8}
+.score span{font-size:30px}
 .rv{list-style:none;padding:0;margin:18px 0}
-.rv li{border-top:1px solid var(--line);padding:12px 0}
-.rv small{color:var(--sub);display:block}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.note{color:var(--sub);font-size:13px;margin-top:28px}
-@media(max-width:480px){.ch{grid-template-columns:minmax(0,1fr)}}
-@media(prefers-reduced-motion:reduce){.timer.run i{animation:none;width:0}.prog i,.opt{transition:none}}
+.rv li{border-top:1px solid #2b3b6b;padding:12px 0}
+.rv small{color:#a9b3d6;display:block;font-size:14px}
+.row{margin-top:18px}
+@media (max-width:520px){
+  h1{font-size:30px}
+  .q{font-size:19px}
+  .card{padding:16px}
+  .opt{float:none;width:100%}
+  .hero svg{width:48px;height:48px}
+  .fig svg{height:210px}
+  .score{font-size:60px}
+}
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
 <script>
-{
-const app = document.getElementById('app');
+(function(){
+var app = document.getElementById('app');
+
+/* ---------- 小さな道具 ---------- */
+function each(list, fn){ for (var n = 0; n < list.length; n++) fn(list[n], n); }
+function map(list, fn){ var out = []; for (var n = 0; n < list.length; n++) out.push(fn(list[n], n)); return out; }
+function byId(id){ return document.getElementById(id); }
+function hasClass(el, c){ return (' ' + el.className + ' ').indexOf(' ' + c + ' ') > -1; }
+function addClass(el, c){ if (!hasClass(el, c)) el.className += (el.className ? ' ' : '') + c; }
+function rnd(n){ return Math.round(n * 10) / 10; }
 
 /* ---------- 図のパーツ ---------- */
-const C = {lit:'#f6e7a8', dark:'#38456e', edge:'#8a93b3', ink:'#eef1fb', sub:'#a9b3d6'};
-function half(cx,cy,r,dir){
-  const p = {
-    right:`M${cx} ${cy-r}A${r} ${r} 0 0 1 ${cx} ${cy+r}Z`,
-    left:`M${cx} ${cy-r}A${r} ${r} 0 0 0 ${cx} ${cy+r}Z`,
-    top:`M${cx-r} ${cy}A${r} ${r} 0 0 1 ${cx+r} ${cy}Z`,
-    bottom:`M${cx-r} ${cy}A${r} ${r} 0 0 0 ${cx+r} ${cy}Z`}[dir];
-  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.dark}"/><path d="${p}" fill="${C.lit}"/>`;
+var LIT = '#f6e7a8', DARK = '#38456e', EDGE = '#8a93b3', INK = '#eef1fb', SUB = '#a9b3d6';
+
+function half(cx, cy, r, dir){
+  var p;
+  if (dir === 'right') p = 'M' + cx + ' ' + (cy - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + cx + ' ' + (cy + r) + 'Z';
+  else if (dir === 'left') p = 'M' + cx + ' ' + (cy - r) + 'A' + r + ' ' + r + ' 0 0 0 ' + cx + ' ' + (cy + r) + 'Z';
+  else if (dir === 'top') p = 'M' + (cx - r) + ' ' + cy + 'A' + r + ' ' + r + ' 0 0 1 ' + (cx + r) + ' ' + cy + 'Z';
+  else p = 'M' + (cx - r) + ' ' + cy + 'A' + r + ' ' + r + ' 0 0 0 ' + (cx + r) + ' ' + cy + 'Z';
+  return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + DARK + '"/><path d="' + p + '" fill="' + LIT + '"/>';
 }
+
 // 地球から見た月の形
-function moonAt(cx,cy,r,t){
-  if(t==='new') return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.dark}" stroke="${C.edge}" stroke-dasharray="3 3" stroke-width="1.5"/>`;
-  if(t==='full') return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.lit}"/>`;
-  if(t==='first') return half(cx,cy,r,'right');
-  if(t==='last') return half(cx,cy,r,'left');
-  if(t==='crescent') return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.dark}"/><path d="M${cx} ${cy-r}A${r} ${r} 0 0 1 ${cx} ${cy+r}A${r*.5} ${r} 0 0 0 ${cx} ${cy-r}Z" fill="${C.lit}"/>`;
-  if(t==='plain') return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1c2950" stroke="${C.ink}" stroke-width="2"/>`;
-  return half(cx,cy,r,t);
+function moonAt(cx, cy, r, t){
+  if (t === 'new') return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + DARK + '" stroke="' + EDGE + '" stroke-dasharray="3 3" stroke-width="1.5"/>';
+  if (t === 'full') return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + LIT + '"/>';
+  if (t === 'first') return half(cx, cy, r, 'right');
+  if (t === 'last') return half(cx, cy, r, 'left');
+  if (t === 'crescent') return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + DARK + '"/><path d="M' + cx + ' ' + (cy - r) +
+    'A' + r + ' ' + r + ' 0 0 1 ' + cx + ' ' + (cy + r) + 'A' + (r * 0.5) + ' ' + r + ' 0 0 0 ' + cx + ' ' + (cy - r) + 'Z" fill="' + LIT + '"/>';
+  if (t === 'plain') return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#1c2950" stroke="' + INK + '" stroke-width="2"/>';
+  return half(cx, cy, r, t);
 }
-const icon = t => `<svg viewBox="0 0 60 60" aria-hidden="true">${moonAt(30,30,24,t)}</svg>`;
+function icon(t){ return '<svg viewBox="0 0 60 60" width="60" height="60" aria-hidden="true">' + moonAt(30, 30, 24, t) + '</svg>'; }
+function bigMoon(t){ return function(){ return '<svg viewBox="0 0 120 120" width="140" height="140">' + moonAt(60, 60, 48, t) + '</svg>'; }; }
+
+// 矢印は marker を使わず三角形で描く（古いブラウザ対策）
+function arrowLine(x1, y1, x2, y2, color, w){
+  var a = Math.atan2(y2 - y1, x2 - x1), s = 7;
+  var p1x = x2 - s * Math.cos(a - 0.45), p1y = y2 - s * Math.sin(a - 0.45);
+  var p2x = x2 - s * Math.cos(a + 0.45), p2y = y2 - s * Math.sin(a + 0.45);
+  return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + w + '"/>' +
+    '<polygon points="' + rnd(x2) + ',' + rnd(y2) + ' ' + rnd(p1x) + ',' + rnd(p1y) + ' ' + rnd(p2x) + ',' + rnd(p2y) + '" fill="' + color + '"/>';
+}
 
 // 宇宙から見た図（北極の上から）
-function orbit(o){
-  const cx=180,cy=180,R=100,mr=16;
-  const pos={top:[cx,cy-R],left:[cx-R,cy],bottom:[cx,cy+R],right:[cx+R,cy]};
-  let s=`<svg viewBox="0 0 360 360" role="img" aria-label="宇宙から見た地球と月"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="${C.sub}"/></marker><marker id="al" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="${C.lit}"/></marker></defs>`;
-  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.sub}" stroke-dasharray="5 5"/>`;
-  // 公転の向き（反時計回り）
-  const a1=-25*Math.PI/180,a2=-60*Math.PI/180,Ra=R+18;
-  s+=`<path d="M${cx+Ra*Math.cos(a1)} ${cy+Ra*Math.sin(a1)}A${Ra} ${Ra} 0 0 0 ${cx+Ra*Math.cos(a2)} ${cy+Ra*Math.sin(a2)}" fill="none" stroke="${C.sub}" stroke-width="2" marker-end="url(#ah)"/>`;
-  // 光
-  const L=o.light;
-  const arrows=(dir,lab)=>{let a='';for(let i=-2;i<=2;i++){const k=i*42;
-    if(dir==='right')a+=`<line x1="356" y1="${cy+k}" x2="${cx+R+mr+14}" y2="${cy+k}" stroke="${C.lit}" stroke-width="2" marker-end="url(#al)"/>`;
-    if(dir==='left')a+=`<line x1="4" y1="${cy+k}" x2="${cx-R-mr-14}" y2="${cy+k}" stroke="${C.lit}" stroke-width="2" marker-end="url(#al)"/>`;
-    if(dir==='top')a+=`<line x1="${cx+k}" y1="4" x2="${cx+k}" y2="${cy-R-mr-14}" stroke="${C.lit}" stroke-width="2" marker-end="url(#al)"/>`;
-    if(dir==='bottom')a+=`<line x1="${cx+k}" y1="356" x2="${cx+k}" y2="${cy+R+mr+14}" stroke="${C.lit}" stroke-width="2" marker-end="url(#al)"/>`;}
-    if(lab){const lp={right:[346,cy-52],left:[14,cy-52],top:[cx+64,16],bottom:[cx+64,350]}[dir];a+=`<text x="${lp[0]}" y="${lp[1]}" fill="${C.lit}" font-size="17" font-weight="700" text-anchor="middle">${lab}</text>`}
-    return a;};
-  if(L==='all'){s+=arrows('top','①')+arrows('left','②')+arrows('bottom','③')+arrows('right','④');}
-  else s+=arrows(L,'太陽の光');
-  // 地球
-  s+= L==='all' ? `<circle cx="${cx}" cy="${cy}" r="30" fill="#2a6f9e"/>` : half(cx,cy,30,L);
-  s+=`<circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/><text x="${cx}" y="${cy+50}" fill="${C.ink}" font-size="14" text-anchor="middle">地球（北極）</text>`;
-  // 月
-  for(const k in pos){const [x,y]=pos[k];s+= L==='all'?moonAt(x,y,mr,'plain'):half(x,y,mr,L);
-    const off={top:[0,-26],left:[-28,6],bottom:[0,34],right:[30,6]}[k];
-    if(o.labels&&o.labels[k]) s+=`<text x="${x+off[0]+(L==='all'&&k==='top'?-30:0)}" y="${y+off[1]}" fill="${C.ink}" font-size="17" font-weight="700" text-anchor="middle">${o.labels[k]}</text>`;}
-  return s+'</svg>';
+function orbit(light, labels){
+  return function(){
+    var cx = 180, cy = 180, R = 100, mr = 16;
+    var pos = {top: [cx, cy - R], left: [cx - R, cy], bottom: [cx, cy + R], right: [cx + R, cy]};
+    var s = '<svg viewBox="0 0 360 360" width="340" height="240" role="img" aria-label="宇宙から見た地球と月">';
+    s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="' + SUB + '" stroke-dasharray="5 5"/>';
+    // 公転の向き（反時計回り）
+    var a1 = -25 * Math.PI / 180, a2 = -60 * Math.PI / 180, Ra = R + 18;
+    var ex = cx + Ra * Math.cos(a2), ey = cy + Ra * Math.sin(a2);
+    s += '<path d="M' + rnd(cx + Ra * Math.cos(a1)) + ' ' + rnd(cy + Ra * Math.sin(a1)) + 'A' + Ra + ' ' + Ra + ' 0 0 0 ' + rnd(ex) + ' ' + rnd(ey) + '" fill="none" stroke="' + SUB + '" stroke-width="2"/>';
+    var ta = a2 - Math.PI / 2; // 進む向き
+    s += '<polygon points="' + rnd(ex + 8 * Math.cos(ta)) + ',' + rnd(ey + 8 * Math.sin(ta)) + ' ' + rnd(ex + 5 * Math.cos(a2)) + ',' + rnd(ey + 5 * Math.sin(a2)) + ' ' + rnd(ex - 5 * Math.cos(a2)) + ',' + rnd(ey - 5 * Math.sin(a2)) + '" fill="' + SUB + '"/>';
+
+    function arrows(dir, lab){
+      var a = '';
+      for (var n = -2; n <= 2; n++){
+        var k = n * 42;
+        if (dir === 'right') a += arrowLine(356, cy + k, cx + R + mr + 14, cy + k, LIT, 2);
+        if (dir === 'left') a += arrowLine(4, cy + k, cx - R - mr - 14, cy + k, LIT, 2);
+        if (dir === 'top') a += arrowLine(cx + k, 4, cx + k, cy - R - mr - 14, LIT, 2);
+        if (dir === 'bottom') a += arrowLine(cx + k, 356, cx + k, cy + R + mr + 14, LIT, 2);
+      }
+      var lp = {right: [340, cy - 52], left: [22, cy - 52], top: [cx + 64, 16], bottom: [cx + 64, 352]}[dir];
+      a += '<text x="' + lp[0] + '" y="' + lp[1] + '" fill="' + LIT + '" font-size="17" font-weight="bold" text-anchor="middle">' + lab + '</text>';
+      return a;
+    }
+    if (light === 'all') s += arrows('top', '①') + arrows('left', '②') + arrows('bottom', '③') + arrows('right', '④');
+    else s += arrows(light, '太陽の光');
+
+    s += light === 'all' ? '<circle cx="' + cx + '" cy="' + cy + '" r="30" fill="#2a6f9e"/>' : half(cx, cy, 30, light);
+    s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="#fff"/><text x="' + cx + '" y="' + (cy + 50) + '" fill="' + INK + '" font-size="14" text-anchor="middle">地球（北極）</text>';
+
+    var off = {top: [0, -26], left: [-28, 6], bottom: [0, 34], right: [30, 6]};
+    each(['top', 'left', 'bottom', 'right'], function(k){
+      var x = pos[k][0], y = pos[k][1];
+      s += light === 'all' ? moonAt(x, y, mr, 'plain') : half(x, y, mr, light);
+      var dx = off[k][0] + (light === 'all' && k === 'top' ? -30 : 0);
+      s += '<text x="' + (x + dx) + '" y="' + (y + off[k][1]) + '" fill="' + INK + '" font-size="17" font-weight="bold" text-anchor="middle">' + labels[k] + '</text>';
+    });
+    return s + '</svg>';
+  };
 }
-const ABCD={top:'A',left:'B',bottom:'C',right:'D'}, N14={top:'①',left:'②',bottom:'③',right:'④'};
+var ABCD = {top: 'A', left: 'B', bottom: 'C', right: 'D'};
+var N14 = {top: '①', left: '②', bottom: '③', right: '④'};
 
 // 月の通り道（空）
-function sky(t,moon,dirs){
-  dirs=dirs||['東','南','西'];
-  const pts=[[46,150],[170,46],[294,150]];
-  let s=`<svg viewBox="0 0 340 200" role="img" aria-label="月の通り道"><defs><marker id="sa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="${C.sub}"/></marker></defs>`;
-  s+=`<path d="M10 160Q170 120 330 160L330 200L10 200Z" fill="#22305a"/><path d="M10 160Q170 120 330 160" fill="none" stroke="${C.sub}" stroke-width="2"/>`;
-  s+=`<path d="M58 132Q170 -10 282 132" fill="none" stroke="${C.sub}" stroke-dasharray="4 5" stroke-width="1.5" marker-end="url(#sa)"/>`;
-  s+=`<line x1="170" y1="64" x2="170" y2="142" stroke="${C.sub}" stroke-dasharray="2 4"/>`;
-  pts.forEach((p,i)=>{ if(moon[i]) s+=moonAt(p[0],p[1]-(i===1?0:8),15,moon[i]);
-    if(t[i]) s+=`<text x="${p[0]+(i===0?-6:i===2?6:28)}" y="${p[1]-(i===1?-6:30)}" fill="${C.ink}" font-size="15" font-weight="700" text-anchor="${i===1?'start':'middle'}">${t[i]}</text>`;
-    s+=`<text x="${p[0]}" y="${188}" fill="${C.ink}" font-size="16" font-weight="700" text-anchor="middle">${dirs[i]}</text>`;});
-  s+=`<text x="230" y="178" fill="${C.sub}" font-size="12">地平線</text>`;
-  return s+'</svg>';
+function sky(t, moon, dirs){
+  return function(){
+    dirs = dirs || ['東', '南', '西'];
+    var pts = [[46, 150], [170, 46], [294, 150]];
+    var s = '<svg viewBox="0 0 340 200" width="440" height="259" role="img" aria-label="月の通り道">';
+    s += '<path d="M10 160Q170 120 330 160L330 200L10 200Z" fill="#22305a"/><path d="M10 160Q170 120 330 160" fill="none" stroke="' + SUB + '" stroke-width="2"/>';
+    s += '<path d="M58 132Q170 -10 282 132" fill="none" stroke="' + SUB + '" stroke-dasharray="4 5" stroke-width="1.5"/>';
+    s += '<polygon points="282,132 271,126 278,121" fill="' + SUB + '"/>';
+    s += '<line x1="170" y1="64" x2="170" y2="142" stroke="' + SUB + '" stroke-dasharray="2 4"/>';
+    each(pts, function(p, n){
+      if (moon[n]) s += moonAt(p[0], p[1] - (n === 1 ? 0 : 8), 15, moon[n]);
+      if (t[n]) s += '<text x="' + (p[0] + (n === 0 ? -6 : n === 2 ? 6 : 28)) + '" y="' + (p[1] - (n === 1 ? -6 : 30)) + '" fill="' + INK + '" font-size="15" font-weight="bold" text-anchor="' + (n === 1 ? 'start' : 'middle') + '">' + t[n] + '</text>';
+      s += '<text x="' + p[0] + '" y="188" fill="' + INK + '" font-size="16" font-weight="bold" text-anchor="middle">' + dirs[n] + '</text>';
+    });
+    s += '<text x="230" y="178" fill="' + SUB + '" font-size="12">地平線</text>';
+    return s + '</svg>';
+  };
 }
 
 // 月の出〜月の入りのグラフ（学び直し②）
 function graph(){
-  const rows=[['11/4',0,12],['11/11',6,18],['11/18',12,24],['11/25',18,30]];
-  const x=h=>70+h*10.4;
-  let s=`<svg viewBox="0 0 340 190" role="img" aria-label="月の出から月の入りまでのグラフ">`;
-  for(let h=0;h<=24;h+=6){s+=`<line x1="${x(h)}" y1="22" x2="${x(h)}" y2="170" stroke="${C.edge}" stroke-dasharray="2 4"/><text x="${x(h)}" y="15" fill="${C.sub}" font-size="12" text-anchor="middle">${h%24}時</text>`;}
-  rows.forEach((r,i)=>{const y=44+i*36;
-    s+=`<text x="8" y="${y+5}" fill="${C.ink}" font-size="14">${r[0]}</text>`;
-    const seg=(a,b)=>`<line x1="${x(a)}" y1="${y}" x2="${x(b)}" y2="${y}" stroke="${C.lit}" stroke-width="5" stroke-linecap="round"/>`;
-    if(r[2]>24){s+=seg(r[1],24)+seg(0,r[2]-24);s+=`<circle cx="${x(r[2]-24)}" cy="${y}" r="5" fill="${C.lit}"/>`}
-    else {s+=seg(r[1],r[2]);s+=`<circle cx="${x(r[2])}" cy="${y}" r="5" fill="${C.lit}"/>`}
-    s+=`<circle cx="${x(r[1])}" cy="${y}" r="5" fill="#18254a" stroke="${C.lit}" stroke-width="2"/>`;});
-  s+=`<text x="70" y="186" fill="${C.sub}" font-size="11">○月の出　●月の入り（11/25は次の日の朝に入る）</text>`;
-  return s+'</svg>';
+  var rows = [['11/4', 0, 12], ['11/11', 6, 18], ['11/18', 12, 24], ['11/25', 18, 30]];
+  function x(h){ return rnd(70 + h * 10.4); }
+  var s = '<svg viewBox="0 0 340 190" width="440" height="246" role="img" aria-label="月の出から月の入りまでのグラフ">';
+  for (var h = 0; h <= 24; h += 6){
+    s += '<line x1="' + x(h) + '" y1="22" x2="' + x(h) + '" y2="170" stroke="' + EDGE + '" stroke-dasharray="2 4"/><text x="' + x(h) + '" y="15" fill="' + SUB + '" font-size="12" text-anchor="middle">' + (h % 24) + '時</text>';
+  }
+  each(rows, function(r, n){
+    var y = 44 + n * 36;
+    function seg(a, b){ return '<line x1="' + x(a) + '" y1="' + y + '" x2="' + x(b) + '" y2="' + y + '" stroke="' + LIT + '" stroke-width="5" stroke-linecap="round"/>'; }
+    s += '<text x="8" y="' + (y + 5) + '" fill="' + INK + '" font-size="14">' + r[0] + '</text>';
+    var end = r[2] > 24 ? r[2] - 24 : r[2];
+    s += r[2] > 24 ? seg(r[1], 24) + seg(0, end) : seg(r[1], r[2]);
+    s += '<circle cx="' + x(end) + '" cy="' + y + '" r="5" fill="' + LIT + '"/>';
+    s += '<circle cx="' + x(r[1]) + '" cy="' + y + '" r="5" fill="#18254a" stroke="' + LIT + '" stroke-width="2"/>';
+  });
+  s += '<text x="70" y="186" fill="' + SUB + '" font-size="11">○月の出　●月の入り（11/25は次の日の朝に入る）</text>';
+  return s + '</svg>';
 }
 
 /* ---------- 問題 ---------- */
-const M=(t,l)=>({m:t,t:l});
-const Q=[
+function M(t, l){ return {m: t, t: l}; }
+var KATA = ['新月', '上げんの月', '満月', '下げんの月'];
+var KATA_PIC = [M('new', '新月'), M('first', '上げんの月'), M('full', '満月'), M('last', '下げんの月')];
+var JI = ['0時', '6時', '12時', '18時'];
+
+var Q = [
 // 月の特ちょう
-{c:'月の特ちょう',q:'太陽のように、自分で光を出している天体を何といいますか。',ch:['恒星','惑星','衛星','クレーター'],a:0,e:'自分で光を出す天体は「恒星」。太陽は恒星です。'},
-{c:'月の特ちょう',q:'地球のように、恒星（太陽）のまわりを公転している天体を何といいますか。',ch:['恒星','惑星','衛星','すい星'],a:1,e:'恒星のまわりを公転する天体は「惑星」。地球は惑星です。'},
-{c:'月の特ちょう',q:'月のように、惑星（地球）のまわりを公転している天体を何といいますか。',ch:['恒星','惑星','衛星','銀河'],a:2,e:'惑星のまわりを公転する天体は「衛星」。月は地球の衛星です。'},
-{c:'月の特ちょう',q:'地球から月までのきょりは、約何kmですか。',ch:['約3万8000km','約38万km','約380万km','約3800万km'],a:1,e:'地球から月までは約38万kmです。'},
-{c:'月の特ちょう',q:'地球から月までには、地球が約何個ならぶくらいはなれていますか。',ch:['約20個','約30個','約40個','約50個'],a:1,e:'約38万kmは、地球が約30個ならぶきょりです。'},
-{c:'月の特ちょう',q:'地球の直径は約13000km、月の直径は約3500kmです。地球の直径は月の約何倍ですか。',ch:['約2倍','約3倍','約4倍','約10倍'],a:2,e:'13000÷3500＝約3.7 → 約4倍。月の大きさは地球を4等分したくらいです。'},
-{c:'月の特ちょう',q:'夜に月が明るく光っているように見えるのはなぜですか。',ch:['月が自分で光を出しているから','月が太陽の光を反射しているから','月の表面が燃えているから','地球の明かりを受けているから'],a:1,one:1,e:'月は自分では光を出していません。太陽の光を反射して光って見えます。'},
-{c:'月の特ちょう',q:'月の表面にある、まるいくぼみを何といいますか。',ch:['クレーター','火口湖','海こう','ぼん地'],a:0,e:'月の表面のくぼみは「クレーター」といいます。'},
-{c:'月の特ちょう',q:'月の表面には空気（大気）がありません。そのため、月の表面の温度はどうなっていますか。',ch:['昼と夜の温度差がとても大きい（100℃以上）','一日中ほとんど同じ温度','地球とほぼ同じ温度','いつも0℃くらい'],a:0,one:1,e:'空気がないので、昼と夜の温度差が100℃以上にもなります。'},
+{c:'月の特ちょう', q:'太陽のように、自分で光を出している天体を何といいますか。', ch:['恒星','惑星','衛星','クレーター'], a:0, e:'自分で光を出す天体は「恒星」。太陽は恒星です。'},
+{c:'月の特ちょう', q:'地球のように、恒星（太陽）のまわりを公転している天体を何といいますか。', ch:['恒星','惑星','衛星','すい星'], a:1, e:'恒星のまわりを公転する天体は「惑星」。地球は惑星です。'},
+{c:'月の特ちょう', q:'月のように、惑星（地球）のまわりを公転している天体を何といいますか。', ch:['恒星','惑星','衛星','銀河'], a:2, e:'惑星のまわりを公転する天体は「衛星」。月は地球の衛星です。'},
+{c:'月の特ちょう', q:'地球から月までのきょりは、約何kmですか。', ch:['約3万8000km','約38万km','約380万km','約3800万km'], a:1, e:'地球から月までは約38万kmです。'},
+{c:'月の特ちょう', q:'地球から月までには、地球が約何個ならぶくらいはなれていますか。', ch:['約20個','約30個','約40個','約50個'], a:1, e:'約38万kmは、地球が約30個ならぶきょりです。'},
+{c:'月の特ちょう', q:'地球の直径は約13000km、月の直径は約3500kmです。地球の直径は月の約何倍ですか。', ch:['約2倍','約3倍','約4倍','約10倍'], a:2, e:'13000÷3500＝約3.7 → 約4倍。月の大きさは地球を4等分したくらいです。'},
+{c:'月の特ちょう', q:'夜に月が明るく光っているように見えるのはなぜですか。', ch:['月が自分で光を出しているから','月が太陽の光を反射しているから','月の表面が燃えているから','地球の明かりを受けているから'], a:1, one:1, e:'月は自分では光を出していません。太陽の光を反射して光って見えます。'},
+{c:'月の特ちょう', q:'月の表面にある、まるいくぼみを何といいますか。', ch:['クレーター','火口湖','海こう','ぼん地'], a:0, e:'月の表面のくぼみは「クレーター」といいます。'},
+{c:'月の特ちょう', q:'月の表面には空気（大気）がありません。そのため、月の表面の温度はどうなっていますか。', ch:['昼と夜の温度差がとても大きい（100℃以上）','一日中ほとんど同じ温度','地球とほぼ同じ温度','いつも0℃くらい'], a:0, one:1, e:'空気がないので、昼と夜の温度差が100℃以上にもなります。'},
 // 満ち欠け
-{c:'満ち欠けの順と周期',q:'月の形が変わっていく正しい順はどれですか。',ch:['新月→上げんの月→満月→下げんの月','新月→下げんの月→満月→上げんの月','満月→上げんの月→新月→下げんの月','新月→満月→上げんの月→下げんの月'],a:0,one:1,e:'新月 → 上げんの月 → 満月 → 下げんの月 → 新月…の順にくり返します。'},
-{c:'満ち欠けの順と周期',q:'新月から上げんの月になるまで、約何日かかりますか。',ch:['約3日','約7〜8日','約15日','約22〜23日'],a:1,e:'新月から上げんの月までは約7〜8日です。'},
-{c:'満ち欠けの順と周期',q:'新月から満月になるまで、約何日かかりますか。',ch:['約7日','約15日','約23日','約30日'],a:1,e:'新月から満月までは約15日です。'},
-{c:'満ち欠けの順と周期',q:'新月から下げんの月になるまで、約何日かかりますか。',ch:['約7〜8日','約15日','約22〜23日','約30日'],a:2,e:'新月から下げんの月までは約22〜23日です。'},
-{c:'満ち欠けの順と周期',q:'満月が新月の形になるまで、およそ何日かかりますか。',ch:['3日','7日','15日','30日'],a:2,e:'満月から下げんの月まで約7〜8日、そこから新月まで約7〜8日。合わせて約15日です。'},
-{c:'満ち欠けの順と周期',q:'月の満ち欠けの周期（新月から次の新月まで）は約何日ですか。',ch:['約7日','約15日','約23日','約30日'],a:3,e:'月の満ち欠けの周期は約30日です。'},
-{c:'満ち欠けの順と周期',q:'この形の月を何といいますか。',f:()=>`<svg viewBox="0 0 120 120">${moonAt(60,60,48,'full')}</svg>`,ch:['新月','上げんの月','満月','下げんの月'],a:2,e:'全体が光って見える月は「満月」です。'},
-{c:'満ち欠けの順と周期',q:'この形の月（右半分が光っている）を何といいますか。',f:()=>`<svg viewBox="0 0 120 120">${moonAt(60,60,48,'first')}</svg>`,ch:['新月','上げんの月','満月','下げんの月'],a:1,e:'右半分が光る半月は「上げんの月」。新月の約7〜8日後に見られます。'},
-{c:'満ち欠けの順と周期',q:'この形の月（左半分が光っている）を何といいますか。',f:()=>`<svg viewBox="0 0 120 120">${moonAt(60,60,48,'last')}</svg>`,ch:['新月','上げんの月','満月','下げんの月'],a:3,e:'左半分が光る半月は「下げんの月」。新月の約22〜23日後に見られます。'},
-{c:'満ち欠けの順と周期',q:'上げんの月を日本で見ると、どのような形に見えますか。',ch:[M('new','ア'),M('full','イ'),M('last','ウ'),M('first','エ')],a:3,e:'上げんの月は右半分が光って見えます。'},
-{c:'満ち欠けの順と周期',q:'右側が細く光るこの月（三日月）が見られるのは、いつごろですか。',f:()=>`<svg viewBox="0 0 120 120">${moonAt(60,60,48,'crescent')}</svg>`,ch:['新月と上げんの月のあいだ','上げんの月と満月のあいだ','満月と下げんの月のあいだ','下げんの月と新月のあいだ'],a:0,one:1,e:'新月のあと、右側から少しずつ光る部分がふえていきます。三日月は新月と上げんの月のあいだです。'},
+{c:'満ち欠けの順と周期', q:'月の形が変わっていく正しい順はどれですか。', ch:['新月→上げんの月→満月→下げんの月','新月→下げんの月→満月→上げんの月','満月→上げんの月→新月→下げんの月','新月→満月→上げんの月→下げんの月'], a:0, one:1, e:'新月 → 上げんの月 → 満月 → 下げんの月 → 新月…の順にくり返します。'},
+{c:'満ち欠けの順と周期', q:'新月から上げんの月になるまで、約何日かかりますか。', ch:['約3日','約7〜8日','約15日','約22〜23日'], a:1, e:'新月から上げんの月までは約7〜8日です。'},
+{c:'満ち欠けの順と周期', q:'新月から満月になるまで、約何日かかりますか。', ch:['約7日','約15日','約23日','約30日'], a:1, e:'新月から満月までは約15日です。'},
+{c:'満ち欠けの順と周期', q:'新月から下げんの月になるまで、約何日かかりますか。', ch:['約7〜8日','約15日','約22〜23日','約30日'], a:2, e:'新月から下げんの月までは約22〜23日です。'},
+{c:'満ち欠けの順と周期', q:'満月が新月の形になるまで、およそ何日かかりますか。', ch:['3日','7日','15日','30日'], a:2, e:'満月から下げんの月まで約7〜8日、そこから新月まで約7〜8日。合わせて約15日です。'},
+{c:'満ち欠けの順と周期', q:'月の満ち欠けの周期（新月から次の新月まで）は約何日ですか。', ch:['約7日','約15日','約23日','約30日'], a:3, e:'月の満ち欠けの周期は約30日です。'},
+{c:'満ち欠けの順と周期', q:'この形の月を何といいますか。', f:bigMoon('full'), small:1, ch:KATA, a:2, e:'全体が光って見える月は「満月」です。'},
+{c:'満ち欠けの順と周期', q:'この形の月（右半分が光っている）を何といいますか。', f:bigMoon('first'), small:1, ch:KATA, a:1, e:'右半分が光る半月は「上げんの月」。新月の約7〜8日後に見られます。'},
+{c:'満ち欠けの順と周期', q:'この形の月（左半分が光っている）を何といいますか。', f:bigMoon('last'), small:1, ch:KATA, a:3, e:'左半分が光る半月は「下げんの月」。新月の約22〜23日後に見られます。'},
+{c:'満ち欠けの順と周期', q:'上げんの月を日本で見ると、どのような形に見えますか。', ch:[M('new','ア'),M('full','イ'),M('last','ウ'),M('first','エ')], a:3, e:'上げんの月は右半分が光って見えます。'},
+{c:'満ち欠けの順と周期', q:'右側が細く光るこの月（三日月）が見られるのは、いつごろですか。', f:bigMoon('crescent'), small:1, ch:['新月と上げんの月のあいだ','上げんの月と満月のあいだ','満月と下げんの月のあいだ','下げんの月と新月のあいだ'], a:0, one:1, e:'新月のあと、右側から少しずつ光る部分がふえていきます。三日月は新月と上げんの月のあいだです。'},
 // 時刻と方角
-{c:'見える時刻と方角',q:'月は、どの方角から出て、どこを通り、どの方角へしずみますか。',ch:['東 → 南 → 西','西 → 南 → 東','東 → 北 → 西','南 → 東 → 北'],a:0,e:'月は太陽と同じように、東から出て、南の空を通り、西へしずみます。'},
-{c:'見える時刻と方角',q:'月の出から南中まで、また南中から月の入りまでは、それぞれおよそ何時間ですか。',ch:['約3時間','約6時間','約12時間','約24時間'],a:1,e:'月の出 → 南中 → 月の入りは、それぞれおよそ6時間です。'},
-{c:'見える時刻と方角',q:'新月 → 上げんの月 → 満月 → 下げんの月と変わるごとに、月の出の時刻はどうなりますか。',ch:['約6時間ずつおそくなる','約6時間ずつ早くなる','いつも同じ時刻','約12時間ずつおそくなる'],a:0,one:1,e:'月の出・南中・月の入りの時刻は、形が変わるごとに約6時間ずつおそくなります。'},
-{c:'見える時刻と方角',q:'新月・上げんの月・満月・下げんの月のうち、太陽と同じ方角にあり、同じように動いていく月はどれですか。',ch:['新月','上げんの月','満月','下げんの月'],a:0,e:'新月は太陽と同じ方角にあります。だから明るい昼の空にあって見えません。'},
-{c:'見える時刻と方角',q:'新月が月の出をむかえる（東からのぼる）のは、およそ何時ですか。',ch:['0時','6時','12時','18時'],a:1,e:'新月は太陽と同じ動き。6時に出て、12時に南中、18時に入ります。'},
-{c:'見える時刻と方角',q:'上げんの月が南中する時刻は、およそ何時ですか。',ch:['0時','6時','12時','18時'],a:3,e:'上げんの月は 12時に出て → 18時に南中 → 0時に入ります。'},
-{c:'見える時刻と方角',q:'満月が西へしずむ（月の入り）のは、およそ何時ですか。',ch:['0時','6時','12時','18時'],a:1,e:'満月は 18時に出て → 0時に南中 → 6時に入ります。'},
-{c:'見える時刻と方角',q:'下げんの月が南中する時刻は、およそ何時ですか。',ch:['0時','6時','12時','18時'],a:1,e:'下げんの月は 0時に出て → 6時に南中 → 12時に入ります。'},
-{c:'見える時刻と方角',q:'下げんの月が西へしずむ（月の入り）のは、およそ何時ですか。',ch:['0時','6時','12時','18時'],a:2,e:'下げんの月は 0時に出て → 6時に南中 → 12時に入ります。'},
-{c:'見える時刻と方角',q:'図のように、18時に東からのぼり、0時に南中、6時に西へしずむ月はどれですか。',f:()=>sky(['18時','0時','6時'],['plain','plain','plain']),wide:1,ch:['新月','上げんの月','満月','下げんの月'],a:2,e:'夕方に出て真夜中に南中する月は満月です。一晩中見えます。'},
-{c:'見える時刻と方角',q:'図のA〜Cは方角を表します。月が18時にAからのぼり、6時にCへしずみました。Bの方角はどれですか。',f:()=>sky(['18時','0時','6時'],['full','full','full'],['A','B','C']),wide:1,ch:['東','西','南','北'],a:2,e:'月は東（A）から出て、南（B）を通り、西（C）へしずみます。'},
-{c:'見える時刻と方角',q:'同じ図で、月がAの方角からのぼり、Bの方角にくるまでに何時間かかりましたか。',f:()=>sky(['18時','0時','6時'],['full','full','full'],['A','B','C']),wide:1,ch:['3時間','6時間','12時間','18時間'],a:1,e:'18時から0時までなので、6時間です。'},
-{c:'見える時刻と方角',q:'右半分が光った月が、18時に南の空に見えました。この月が東からのぼったのは、およそ何時ですか。',f:()=>sky(['','18時',''],[null,'first',null]),wide:1,ch:['6時','12時','15時','0時'],a:1,e:'これは上げんの月。南中の約6時間前、12時ごろにのぼります。'},
-{c:'見える時刻と方角',q:'11月の4日・11日・18日・25日に、月の出から月の入りまでを調べたグラフです。月の出の時刻はどのように変わっていますか。',f:graph,wide:1,ch:['1週間ごとに約6時間ずつおそくなる','1週間ごとに約6時間ずつ早くなる','ほとんど変わらない','1週間ごとに約12時間ずつおそくなる'],a:0,one:1,e:'○（月の出）が 0時 → 6時 → 12時 → 18時と、約6時間ずつ右（おそいほう）へずれています。'},
-{c:'見える時刻と方角',q:'同じグラフで、11月4日（0時に出て12時に入る）に見られた月はどれですか。',f:graph,wide:1,ch:['新月','上げんの月','満月','下げんの月'],a:3,e:'0時に出て、6時に南中、12時に入るのは下げんの月です。'},
+{c:'見える時刻と方角', q:'月は、どの方角から出て、どこを通り、どの方角へしずみますか。', ch:['東 → 南 → 西','西 → 南 → 東','東 → 北 → 西','南 → 東 → 北'], a:0, e:'月は太陽と同じように、東から出て、南の空を通り、西へしずみます。'},
+{c:'見える時刻と方角', q:'月の出から南中まで、また南中から月の入りまでは、それぞれおよそ何時間ですか。', ch:['約3時間','約6時間','約12時間','約24時間'], a:1, e:'月の出 → 南中 → 月の入りは、それぞれおよそ6時間です。'},
+{c:'見える時刻と方角', q:'新月 → 上げんの月 → 満月 → 下げんの月と変わるごとに、月の出の時刻はどうなりますか。', ch:['約6時間ずつおそくなる','約6時間ずつ早くなる','いつも同じ時刻','約12時間ずつおそくなる'], a:0, one:1, e:'月の出・南中・月の入りの時刻は、形が変わるごとに約6時間ずつおそくなります。'},
+{c:'見える時刻と方角', q:'新月・上げんの月・満月・下げんの月のうち、太陽と同じ方角にあり、同じように動いていく月はどれですか。', ch:KATA, a:0, e:'新月は太陽と同じ方角にあります。だから明るい昼の空にあって見えません。'},
+{c:'見える時刻と方角', q:'新月が月の出をむかえる（東からのぼる）のは、およそ何時ですか。', ch:JI, a:1, e:'新月は太陽と同じ動き。6時に出て、12時に南中、18時に入ります。'},
+{c:'見える時刻と方角', q:'上げんの月が南中する時刻は、およそ何時ですか。', ch:JI, a:3, e:'上げんの月は 12時に出て → 18時に南中 → 0時に入ります。'},
+{c:'見える時刻と方角', q:'満月が西へしずむ（月の入り）のは、およそ何時ですか。', ch:JI, a:1, e:'満月は 18時に出て → 0時に南中 → 6時に入ります。'},
+{c:'見える時刻と方角', q:'下げんの月が南中する時刻は、およそ何時ですか。', ch:JI, a:1, e:'下げんの月は 0時に出て → 6時に南中 → 12時に入ります。'},
+{c:'見える時刻と方角', q:'下げんの月が西へしずむ（月の入り）のは、およそ何時ですか。', ch:JI, a:2, e:'下げんの月は 0時に出て → 6時に南中 → 12時に入ります。'},
+{c:'見える時刻と方角', q:'図のように、18時に東からのぼり、0時に南中、6時に西へしずむ月はどれですか。', f:sky(['18時','0時','6時'],['plain','plain','plain']), wide:1, ch:KATA, a:2, e:'夕方に出て真夜中に南中する月は満月です。一晩中見えます。'},
+{c:'見える時刻と方角', q:'図のA〜Cは方角を表します。月が18時にAからのぼり、6時にCへしずみました。Bの方角はどれですか。', f:sky(['18時','0時','6時'],['full','full','full'],['A','B','C']), wide:1, ch:['東','西','南','北'], a:2, e:'月は東（A）から出て、南（B）を通り、西（C）へしずみます。'},
+{c:'見える時刻と方角', q:'同じ図で、月がAの方角からのぼり、Bの方角にくるまでに何時間かかりましたか。', f:sky(['18時','0時','6時'],['full','full','full'],['A','B','C']), wide:1, ch:['3時間','6時間','12時間','18時間'], a:1, e:'18時から0時までなので、6時間です。'},
+{c:'見える時刻と方角', q:'右半分が光った月が、18時に南の空に見えました。この月が東からのぼったのは、およそ何時ですか。', f:sky(['','18時',''],[null,'first',null]), wide:1, ch:['6時','12時','15時','0時'], a:1, e:'これは上げんの月。南中の約6時間前、12時ごろにのぼります。'},
+{c:'見える時刻と方角', q:'11月の4日・11日・18日・25日に、月の出から月の入りまでを調べたグラフです。月の出の時刻はどのように変わっていますか。', f:graph, wide:1, ch:['1週間ごとに約6時間ずつおそくなる','1週間ごとに約6時間ずつ早くなる','ほとんど変わらない','1週間ごとに約12時間ずつおそくなる'], a:0, one:1, e:'○（月の出）が 0時 → 6時 → 12時 → 18時と、約6時間ずつ右（おそいほう）へずれています。'},
+{c:'見える時刻と方角', q:'同じグラフで、11月4日（0時に出て12時に入る）に見られた月はどれですか。', f:graph, wide:1, ch:KATA, a:3, e:'0時に出て、6時に南中、12時に入るのは下げんの月です。'},
 // しくみ
-{c:'満ち欠けのしくみ',q:'月が満ち欠けするのはなぜですか。',ch:['太陽の光を反射しながら地球のまわりを公転し、光の当たる部分の見え方が変わるから','地球のかげが月にうつるから','月が自分で形を変えるから','雲が月をかくすから'],a:0,one:1,e:'月は太陽の光を反射しながら地球のまわりを公転しています。地球から見える「光が当たった部分」が変わるので、満ち欠けします。'},
-{c:'満ち欠けのしくみ',q:'北極の上（宇宙）から見たとき、月が地球のまわりを公転する向きはどちらですか。',f:()=>orbit({light:'right',labels:ABCD}),ch:['時計の針と同じ向き','時計の針と反対の向き'],a:1,e:'北極の上から見ると、月は時計の針と反対の向き（左回り）に公転しています。'},
-{c:'満ち欠けのしくみ',q:'太陽の光が右から当たっています。④の位置にある月は、地球からどう見えますか。',f:()=>orbit({light:'right',labels:N14}),ch:[M('new','新月'),M('first','上げんの月'),M('full','満月'),M('last','下げんの月')],a:0,e:'④は太陽と同じ方向。地球からは光が当たっていない側しか見えないので新月です。'},
-{c:'満ち欠けのしくみ',q:'太陽の光が右から当たっています。②の位置にある月は、地球からどう見えますか。',f:()=>orbit({light:'right',labels:N14}),ch:[M('new','新月'),M('first','上げんの月'),M('full','満月'),M('last','下げんの月')],a:2,e:'②は太陽と反対側。光が当たった面が全部地球を向くので満月です。'},
-{c:'満ち欠けのしくみ',q:'太陽の光が右から当たっています。①の位置にある月は、地球からどう見えますか。',f:()=>orbit({light:'right',labels:N14}),ch:[M('new','新月'),M('first','上げんの月'),M('full','満月'),M('last','下げんの月')],a:1,e:'④（新月）から左回りに4分の1進んだ①は上げんの月。右半分が光って見えます。'},
-{c:'満ち欠けのしくみ',q:'太陽の光が右から当たっています。③の位置にある月は、地球からどう見えますか。',f:()=>orbit({light:'right',labels:N14}),ch:[M('new','ア'),M('full','イ'),M('last','ウ'),M('first','エ')],a:2,e:'③は満月（②）のあとの位置なので下げんの月。左半分が光って見えます。'},
-{c:'満ち欠けのしくみ',q:'太陽の光が左から当たるとき、Cの位置にある月は地球からどう見えますか。',f:()=>orbit({light:'left',labels:ABCD}),ch:[M('new','ア'),M('first','イ'),M('last','ウ'),M('full','エ')],a:1,e:'光が左からなら、Bが新月。そこから左回りに進んだCは上げんの月（右半分が光る）です。'},
-{c:'満ち欠けのしくみ',q:'太陽の光が右から当たるとき、下げんの月（左半分が光る）が見えるのは、月がA〜Dのどこにあるときですか。',f:()=>orbit({light:'right',labels:ABCD}),ch:['A','B','C','D'],a:2,e:'Dが新月、Aが上げんの月、Bが満月、Cが下げんの月です。'},
-{c:'満ち欠けのしくみ',q:'Dの位置にある月が上げんの月に見えるのは、①〜④のどの方向から太陽の光が当たるときですか。',f:()=>orbit({light:'all',labels:ABCD}),ch:['①','②','③','④'],a:2,e:'上げんの月は、新月の位置から左回りに4分の1進んだところ。Dが上げんの月なら新月はC。つまり光は③（下）から当たっています。'},
-{c:'満ち欠けのしくみ',q:'部屋でライトと大小のボールを使った実験。ボールがライトと自分のあいだにあり、ライトに背を向けずにボールを見ると、ボールはどう見えますか。',ch:[M('new','ア'),M('full','イ'),M('first','ウ'),M('last','エ')],a:0,e:'ボールの光が当たっている側は向こう（ライト側）。こちらからは暗い側しか見えないので、新月と同じです。'},
-{c:'満ち欠けのしくみ',q:'ライトの光が右から当たっています。ボールを持った人から見て、右手側が光り、左手側が暗く見えました。このとき見えるボールの形は、何という月と同じですか。',ch:['新月','上げんの月','満月','下げんの月'],a:1,e:'右半分が明るく見えるので、上げんの月と同じ形です。'}
+{c:'満ち欠けのしくみ', q:'月が満ち欠けするのはなぜですか。', ch:['太陽の光を反射しながら地球のまわりを公転し、光の当たる部分の見え方が変わるから','地球のかげが月にうつるから','月が自分で形を変えるから','雲が月をかくすから'], a:0, one:1, e:'月は太陽の光を反射しながら地球のまわりを公転しています。地球から見える「光が当たった部分」が変わるので、満ち欠けします。'},
+{c:'満ち欠けのしくみ', q:'北極の上（宇宙）から見たとき、月が地球のまわりを公転する向きはどちらですか。', f:orbit('right', ABCD), ch:['時計の針と同じ向き','時計の針と反対の向き'], a:1, e:'北極の上から見ると、月は時計の針と反対の向き（左回り）に公転しています。'},
+{c:'満ち欠けのしくみ', q:'太陽の光が右から当たっています。④の位置にある月は、地球からどう見えますか。', f:orbit('right', N14), ch:KATA_PIC, a:0, e:'④は太陽と同じ方向。地球からは光が当たっていない側しか見えないので新月です。'},
+{c:'満ち欠けのしくみ', q:'太陽の光が右から当たっています。②の位置にある月は、地球からどう見えますか。', f:orbit('right', N14), ch:KATA_PIC, a:2, e:'②は太陽と反対側。光が当たった面が全部地球を向くので満月です。'},
+{c:'満ち欠けのしくみ', q:'太陽の光が右から当たっています。①の位置にある月は、地球からどう見えますか。', f:orbit('right', N14), ch:KATA_PIC, a:1, e:'④（新月）から左回りに4分の1進んだ①は上げんの月。右半分が光って見えます。'},
+{c:'満ち欠けのしくみ', q:'太陽の光が右から当たっています。③の位置にある月は、地球からどう見えますか。', f:orbit('right', N14), ch:[M('new','ア'),M('full','イ'),M('last','ウ'),M('first','エ')], a:2, e:'③は満月（②）のあとの位置なので下げんの月。左半分が光って見えます。'},
+{c:'満ち欠けのしくみ', q:'太陽の光が左から当たるとき、Cの位置にある月は地球からどう見えますか。', f:orbit('left', ABCD), ch:[M('new','ア'),M('first','イ'),M('last','ウ'),M('full','エ')], a:1, e:'光が左からなら、Bが新月。そこから左回りに進んだCは上げんの月（右半分が光る）です。'},
+{c:'満ち欠けのしくみ', q:'太陽の光が右から当たるとき、下げんの月（左半分が光る）が見えるのは、月がA〜Dのどこにあるときですか。', f:orbit('right', ABCD), ch:['A','B','C','D'], a:2, e:'Dが新月、Aが上げんの月、Bが満月、Cが下げんの月です。'},
+{c:'満ち欠けのしくみ', q:'Dの位置にある月が上げんの月に見えるのは、①〜④のどの方向から太陽の光が当たるときですか。', f:orbit('all', ABCD), ch:['①','②','③','④'], a:2, e:'上げんの月は、新月の位置から左回りに4分の1進んだところ。Dが上げんの月なら新月はC。つまり光は③（下）から当たっています。'},
+{c:'満ち欠けのしくみ', q:'部屋でライトと大小のボールを使った実験。ボールがライトと自分のあいだにあるとき、ボールはどう見えますか。', ch:[M('new','ア'),M('full','イ'),M('first','ウ'),M('last','エ')], a:0, e:'ボールの光が当たっている側は向こう（ライト側）。こちらからは暗い側しか見えないので、新月と同じです。'},
+{c:'満ち欠けのしくみ', q:'ライトの光が右から当たっています。ボールを持った人から見て、右手側が光り、左手側が暗く見えました。このとき見えるボールの形は、何という月と同じですか。', ch:KATA, a:1, e:'右半分が明るく見えるので、上げんの月と同じ形です。'}
 ];
-const CATS=['すべて','月の特ちょう','満ち欠けの順と周期','見える時刻と方角','満ち欠けのしくみ'];
+var CATS = ['すべて', '月の特ちょう', '満ち欠けの順と周期', '見える時刻と方角', '満ち欠けのしくみ'];
 
 /* ---------- 状態 ---------- */
-let cat='すべて', list=[], i=0, score=0, wrong=[], timer=null, locked=false;
-const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a};
+var cat = 'すべて', list = [], idx = 0, score = 0, wrong = [], timer = null, anim = null, locked = false;
+
+function shuffle(a){
+  a = a.slice();
+  for (var k = a.length - 1; k > 0; k--){ var j = Math.floor(Math.random() * (k + 1)); var tmp = a[k]; a[k] = a[j]; a[j] = tmp; }
+  return a;
+}
+function pick(c){
+  if (c === 'すべて') return Q.slice();
+  var out = []; each(Q, function(q){ if (q.c === c) out.push(q); }); return out;
+}
+function label(c){ return typeof c === 'string' ? c : c.t; }
+function stopTimers(){ clearTimeout(timer); clearInterval(anim); }
 
 function home(){
-  clearTimeout(timer);
-  const n=cat==='すべて'?Q.length:Q.filter(q=>q.c===cat).length;
-  app.innerHTML=`<div class="hero">${['new','crescent','first','full','last'].map(icon).join('')}</div>
-  <h1>満ち欠けする月クイズ</h1>
-  <p class="lead">第6回「天体の観測」のプリントから出題。答えると3秒で次の問題へ進みます。</p>
-  <div style="font-weight:700">出題するはんい</div>
-  <div class="chips">${CATS.map(c=>`<button class="chip" data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('')}</div>
-  <button class="btn" id="go">${n}問ではじめる</button>`;
-  app.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{cat=b.dataset.c;home()});
-  document.getElementById('go').onclick=()=>start(cat==='すべて'?Q:Q.filter(q=>q.c===cat));
+  stopTimers();
+  var n = pick(cat).length;
+  app.innerHTML =
+    '<div class="hero">' + map(['new', 'crescent', 'first', 'full', 'last'], icon).join('') + '</div>' +
+    '<h1>満ち欠けする月クイズ</h1>' +
+    '<p class="lead">第6回「天体の観測」のプリントから出題。答えると3秒で次の問題へ進みます。</p>' +
+    '<div style="font-weight:bold">出題するはんい</div>' +
+    '<div class="chips">' + map(CATS, function(c, n2){
+      return '<button type="button" class="chip' + (c === cat ? ' on' : '') + '" data-n="' + n2 + '">' + c + '</button>';
+    }).join('') + '</div>' +
+    '<button type="button" class="btn" id="go">' + n + '問ではじめる</button>';
+  each(app.getElementsByTagName('button'), function(b){
+    if (hasClass(b, 'chip')) b.onclick = function(){ cat = CATS[+this.getAttribute('data-n')]; home(); };
+  });
+  byId('go').onclick = function(){ start(pick(cat)); };
 }
-function start(qs){list=shuffle(qs);i=0;score=0;wrong=[];show()}
+
+function start(qs){ list = shuffle(qs); idx = 0; score = 0; wrong = []; show(); }
 
 function show(){
-  locked=false;
-  const q=list[i];
-  const ch=q.ch.map((c,k)=>{
-    const lab=typeof c==='string'?c:c.t;
-    const pic=typeof c==='string'?'':icon(c.m);
-    return `<button class="opt" data-k="${k}"><span class="k">${k+1}</span>${pic}<span>${lab}</span></button>`}).join('');
-  const one=q.one||q.ch.some(c=>typeof c==='string'&&c.length>14);
-  app.innerHTML=`<div class="top"><span>${i+1} / ${list.length} 問</span><span>正解 ${score}</span><button class="skip" id="quit">やめる</button></div>
-  <div class="prog"><i style="width:${i/list.length*100}%"></i></div>
-  <div class="card"><span class="cat">${q.c}</span>
-    <p class="q">${q.q}</p>
-    ${q.f?`<div class="fig${q.wide?' wide':''}">${q.f()}</div>`:''}
-    <div class="ch${one?' one':''}">${ch}</div>
-    <div class="fb" id="fb"></div>
-  </div>`;
-  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.k));
-  document.getElementById('quit').onclick=home;
-  window.scrollTo({top:0});
+  locked = false;
+  var q = list[idx];
+  var long = q.one;
+  each(q.ch, function(c){ if (typeof c === 'string' && c.length > 14) long = true; });
+  var ch = map(q.ch, function(c, k){
+    var pic = typeof c === 'string' ? '' : icon(c.m);
+    return '<div class="opt"><button type="button" data-k="' + k + '"><span class="k">' + (k + 1) + '</span>' + pic + '<span class="t">' + label(c) + '</span></button></div>';
+  }).join('');
+  var figCls = q.wide ? ' sky' : (q.small ? ' small' : '');
+  app.innerHTML =
+    '<div class="top"><span class="l">' + (idx + 1) + ' / ' + list.length + ' 問</span><span class="l">正解 ' + score + '</span><button type="button" class="skip r" id="quit">やめる</button></div>' +
+    '<div class="prog"><i style="width:' + (idx / list.length * 100) + '%"></i></div>' +
+    '<div class="card"><span class="cat">' + q.c + '</span>' +
+      '<p class="q">' + q.q + '</p>' +
+      (q.f ? '<div class="fig' + figCls + '">' + q.f() + '</div>' : '') +
+      '<div class="ch' + (long ? ' one' : '') + '">' + ch + '</div>' +
+      '<div class="fb" id="fb"></div>' +
+    '</div>';
+  each(app.getElementsByTagName('button'), function(b){
+    if (b.getAttribute('data-k') !== null) b.onclick = function(){ answer(+this.getAttribute('data-k')); };
+  });
+  byId('quit').onclick = home;
+  window.scrollTo(0, 0);
 }
 
 function answer(k){
-  if(locked)return; locked=true;
-  const q=list[i], ok=k===q.a;
-  if(ok)score++; else wrong.push(q);
-  app.querySelectorAll('.opt').forEach(b=>{const n=+b.dataset.k;b.disabled=true;
-    if(n===q.a)b.classList.add('ok'); else if(n===k)b.classList.add('ng'); else b.classList.add('dim');});
-  const ans=typeof q.ch[q.a]==='string'?q.ch[q.a]:q.ch[q.a].t;
-  const fb=document.getElementById('fb');
-  fb.className='fb show '+(ok?'ok':'ng');
-  fb.innerHTML=`<b>${ok?'○ 正解！':'× ざんねん…'}</b>${ok?'':`　答え：${ans}`}<p>${q.e}</p><div class="timer" id="tm"><i></i></div><button class="skip" id="nx">すぐ次へ ›</button>`;
-  requestAnimationFrame(()=>document.getElementById('tm').classList.add('run'));
-  document.getElementById('nx').onclick=next;
-  fb.scrollIntoView({block:'nearest',behavior:'smooth'});
-  timer=setTimeout(next,3000);
+  if (locked) return;
+  locked = true;
+  var q = list[idx], ok = k === q.a;
+  if (ok) score++; else wrong.push(q);
+  each(app.getElementsByTagName('button'), function(b){
+    var d = b.getAttribute('data-k');
+    if (d === null) return;
+    var n = +d;
+    b.disabled = true;
+    if (n === q.a) addClass(b, 'ok'); else if (n === k) addClass(b, 'ng'); else addClass(b, 'dim');
+  });
+  var fb = byId('fb');
+  fb.className = 'fb show ' + (ok ? 'ok' : 'ng');
+  fb.innerHTML = '<b>' + (ok ? '○ 正解！' : '× ざんねん…') + '</b>' + (ok ? '' : '　答え：' + label(q.ch[q.a])) +
+    '<p>' + q.e + '</p><div class="timer"><i id="bar"></i></div><button type="button" class="skip" id="nx">すぐ次へ ›</button>';
+  byId('nx').onclick = next;
+  if (fb.scrollIntoView) { try { fb.scrollIntoView(false); } catch (e) {} }
+
+  // 3秒カウントダウン（CSSアニメーションを使わず、どのブラウザでも動くように）
+  var bar = byId('bar'), t0 = new Date().getTime();
+  anim = setInterval(function(){
+    var left = 1 - (new Date().getTime() - t0) / 3000;
+    if (left < 0) left = 0;
+    bar.style.width = (left * 100) + '%';
+  }, 50);
+  timer = setTimeout(next, 3000);
 }
-function next(){clearTimeout(timer);i++;i<list.length?show():result()}
+
+function next(){
+  stopTimers();
+  idx++;
+  if (idx < list.length) show(); else result();
+}
 
 function result(){
-  const pct=Math.round(score/list.length*100);
-  const msg=pct===100?'パーフェクト！月はかんぺきです。':pct>=80?'よくできました！あと少しで全問正解。':pct>=50?'いい調子。まちがえた問題をもう一度やってみよう。':'プリントを見直してから、もう一度ちょうせんしよう。';
-  app.innerHTML=`<div class="hero">${['new','crescent','first','full'].map(icon).join('')}</div>
-  <div class="card"><div class="score">${score}<span style="font-size:.4em"> / ${list.length}</span></div>
-  <p style="font-size:19px;font-weight:700;margin:10px 0 0">${msg}</p>
-  ${wrong.length?`<ul class="rv">${wrong.map(q=>`<li>${q.q}<small>答え：${typeof q.ch[q.a]==='string'?q.ch[q.a]:q.ch[q.a].t}</small></li>`).join('')}</ul>`:''}
-  <div class="row">${wrong.length?`<button class="btn" id="rw">まちがえた問題だけ（${wrong.length}問）</button>`:''}
-  <button class="btn ${wrong.length?'ghost':''}" id="ag">もう一度</button><button class="btn ghost" id="hm">はじめにもどる</button></div></div>`;
-  const w=wrong.slice();
-  if(w.length)document.getElementById('rw').onclick=()=>start(w);
-  document.getElementById('ag').onclick=()=>start(list);
-  document.getElementById('hm').onclick=home;
+  var pct = Math.round(score / list.length * 100);
+  var msg = pct === 100 ? 'パーフェクト！月はかんぺきです。' :
+            pct >= 80 ? 'よくできました！あと少しで全問正解。' :
+            pct >= 50 ? 'いい調子。まちがえた問題をもう一度やってみよう。' :
+            'プリントを見直してから、もう一度ちょうせんしよう。';
+  var w = wrong.slice(), done = list.slice();
+  app.innerHTML =
+    '<div class="hero">' + map(['new', 'crescent', 'first', 'full'], icon).join('') + '</div>' +
+    '<div class="card"><div class="score">' + score + '<span> / ' + list.length + '</span></div>' +
+    '<p style="font-size:19px;font-weight:bold;margin:10px 0 0">' + msg + '</p>' +
+    (w.length ? '<ul class="rv">' + map(w, function(q){ return '<li>' + q.q + '<small>答え：' + label(q.ch[q.a]) + '</small></li>'; }).join('') + '</ul>' : '') +
+    '<div class="row">' +
+      (w.length ? '<button type="button" class="btn" id="rw">まちがえた問題だけ（' + w.length + '問）</button>' : '') +
+      '<button type="button" class="btn' + (w.length ? ' ghost' : '') + '" id="ag">もう一度</button>' +
+      '<button type="button" class="btn ghost" id="hm">はじめにもどる</button>' +
+    '</div></div>';
+  if (w.length) byId('rw').onclick = function(){ start(w); };
+  byId('ag').onclick = function(){ start(done); };
+  byId('hm').onclick = home;
+  window.scrollTo(0, 0);
 }
 
-document.addEventListener('keydown',e=>{const n=parseInt(e.key,10);if(!locked&&n>=1&&app.querySelector('.opt')){const q=list[i];if(q&&n<=q.ch.length)answer(n-1)}});
-home();
+// キーボード 1〜4 で回答
+function onKey(e){
+  e = e || window.event;
+  var code = e.keyCode || e.which;
+  var n = code >= 49 && code <= 52 ? code - 48 : (code >= 97 && code <= 100 ? code - 96 : 0);
+  if (!n || locked || !list[idx] || !byId('fb')) return;
+  if (n <= list[idx].ch.length) answer(n - 1);
 }
+if (document.addEventListener) document.addEventListener('keydown', onKey, false);
+else document.attachEvent('onkeydown', onKey);
+
+home();
+})();
 </script>
 </body>
 </html>
